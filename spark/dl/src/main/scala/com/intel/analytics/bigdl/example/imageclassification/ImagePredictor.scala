@@ -37,7 +37,7 @@ object ImagePredictor {
     predictParser.parse(args, new PredictParams()).map(param => {
       val conf = Engine.createSparkConf()
       conf.setAppName("Predict with trained model")
-      val sc = new SparkContext(conf)
+      val sc = SparkContext.getOrCreate(conf)
       Engine.init
       val sqlContext = new SQLContext(sc)
 
@@ -65,11 +65,13 @@ object ImagePredictor {
 
       val valDF = transformDF(sqlContext.createDataFrame(valRDD), transf)
 
-      valTrans.transform(valDF)
-          .select("imageName", "predict")
-          .collect()
-          .take(param.showNum)
-          .foreach(println)
+      val result = valTrans.transform(valDF)
+      result.show(20)
+//        result
+//          .select("imageName", "predict")
+//          .collect()
+//          .take(param.showNum)
+//          .foreach(println)
       sc.stop()
     })
   }
