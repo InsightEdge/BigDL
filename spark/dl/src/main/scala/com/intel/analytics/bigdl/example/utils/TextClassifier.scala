@@ -47,6 +47,7 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
   val gloveDir = s"${param.baseDir}/glove.6B/"
   val textDataDir = s"${param.baseDir}/20_newsgroup/"
   var classNum = -1
+  private val gloveFile = "glove.6B.50d.txt"
 
   /**
    * Load the pre-trained word2Vec
@@ -55,7 +56,7 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
   def buildWord2Vec(word2Meta: Map[String, WordMeta]): Map[Float, Array[Float]] = {
     log.info("Indexing word vectors.")
     val preWord2Vec = MMap[Float, Array[Float]]()
-    val filename = s"$gloveDir/glove.6B.100d.txt"
+    val filename = s"$gloveDir/$gloveFile"
     for (line <- Source.fromFile(filename, "ISO-8859-1").getLines) {
       val values = line.split(" ")
       val word = values(0)
@@ -75,7 +76,7 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
   def buildWord2VecWithIndex(word2Meta: Map[String, Int]): Map[Float, Array[Float]] = {
     log.info("Indexing word vectors.")
     val preWord2Vec = MMap[Float, Array[Float]]()
-    val filename = s"$gloveDir/glove.6B.100d.txt"
+    val filename = s"$gloveDir/$gloveFile"
     for (line <- Source.fromFile(filename, "ISO-8859-1").getLines) {
       val values = line.split(" ")
       val word = values(0)
@@ -203,7 +204,7 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
     val conf = Engine.createSparkConf()
       .setAppName("Text classification")
       .set("spark.task.maxFailures", "1")
-    val sc = new SparkContext(conf)
+    val sc = SparkContext.getOrCreate(conf)
     Engine.init
     val sequenceLen = param.maxSequenceLength
     val embeddingDim = param.embeddingDim
