@@ -180,6 +180,7 @@
 
     <modules>
         <module>spark</module>
+        <module>insightedge</module>
     </modules>
 
     <distributionManagement>
@@ -534,6 +535,14 @@
         <!-- no-op profile for backwards-compatibility with build scripts, for now -->
         <profile>
             <id>spark_1.6</id>
+        </profile>
+        <profile>
+            <id>ie_1.0</id>
+            <!--//TODO does not work-->
+            <properties>
+                <spark-version.project>1.6</spark-version.project>
+                <spark.version>1.6.0</spark.version>
+            </properties>
         </profile>
         <profile>
             <id>spark_2.x</id>
