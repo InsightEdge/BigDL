@@ -3,16 +3,16 @@
 package io.insightedge.bigdl
 
 import com.intel.analytics.bigdl.utils.LoggerFilter
-import org.apache.log4j.{Level => Levle4j, Logger => Logger4j}
 import org.slf4j.{Logger, LoggerFactory}
 import scopt.OptionParser
 
-import scala.language.existentials
+import org.apache.log4j.{Level => Levle4j, Logger => Logger4j}
+
 
 /**
   * @author Danylo_Hurin.
   */
-object InsightedgeTextClassificationJob {
+object InsightedgeTextPredictionJob {
 
   val log: Logger = LoggerFactory.getLogger(this.getClass)
   LoggerFilter.redirectSparkInfoLogs()
@@ -44,8 +44,9 @@ object InsightedgeTextClassificationJob {
     localParser.parse(args, IeTextClassificationParams()).map { param =>
       log.info(s"Current parameters: $param")
       val textClassification = new InsightedgeTextClassifier(param)
-      textClassification.train()
+      textClassification.predict()
     }
   }
+
 
 }

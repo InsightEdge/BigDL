@@ -17,7 +17,7 @@ import scala.collection.mutable.{Map => MMap}
 import scala.language.existentials
 
 
-object LinearRegression {
+object LinearRegressionJob {
 
 
   val FEATURES_DIM = 2

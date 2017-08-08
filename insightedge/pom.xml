@@ -37,9 +37,15 @@
             <groupId>com.intel.analytics.bigdl</groupId>
             <artifactId>bigdl</artifactId>
             <version>0.2.0</version>
-            <!--<systemPath>/code/bigdl-fork/dist/lib/bigdl-0.2.0-jar-with-dependencies.jar</systemPath>-->
             <scope>provided</scope>
         </dependency>
+
+        <!--<dependency>-->
+            <!--<groupId>org.apache.kafka</groupId>-->
+            <!--<artifactId>kafka</artifactId>-->
+            <!--<version>0.8.2.2</version>-->
+            <!--<scope>provided</scope>-->
+        <!--</dependency>-->
 
         <!-- Spark -->
         <dependency>
@@ -62,6 +68,14 @@
             <version>1.0.0</version>
             <scope>provided</scope>
         </dependency>
+
+        <!-- XAP -->
+        <!--<dependency>-->
+            <!--<groupId>org.gigaspaces</groupId>-->
+            <!--<artifactId>xap-full-text-search</artifactId>-->
+            <!--<version>12.1.1</version>-->
+            <!--<scope>provided</scope>-->
+        <!--</dependency>-->
 
         <!-- Scala -->
         <dependency>
