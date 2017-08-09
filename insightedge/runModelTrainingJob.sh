@@ -10,4 +10,5 @@ $INSIGHTEDGE_HOME/bin/insightedge-submit --master ${MASTER} --driver-memory 4g -
            --total-executor-cores 2 --executor-cores 2 \
            --class io.insightedge.bigdl.InsightedgeTextClassifierTrainingJob \
            ./target/insightedge-0.2.0-jar-with-dependencies.jar \
-           --batchSize 128 --baseDir ${BASE_DIR} --partitionNum 4 --modelFile ${MODEL_FILE}
+           --batchSize 128 --baseDir ${BASE_DIR} --partitionNum 4 \
+           --modelFile ${MODEL_FILE} --epochNum 1 --embeddingDim 50

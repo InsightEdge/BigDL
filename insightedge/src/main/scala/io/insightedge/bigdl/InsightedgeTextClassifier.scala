@@ -43,7 +43,6 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
   val gloveDir = s"${param.baseDir}/glove.6B/"
   val textDataDir = s"${param.baseDir}/20_newsgroup/"
   var classNum = -1
-  private val gloveFile = s"glove.6B.${Consts.embeddingsDimensions}d.txt"
 
   /**
     * Start to train the text classification model
@@ -59,6 +58,11 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
     val embeddingDim = param.embeddingDim //depends on which file is chosen for training. 50d -> 50, 100d -> 100
     val trainingSplit = param.trainingSplit
     val modelFile = param.modelFile
+    val epochNum = param.epochNum
+    val gloveEmbeddingsFile = s"$gloveDir/glove.6B.${embeddingDim}d.txt"
+
+    log.info(s"Embeddings dimensions: $embeddingDim")
+    log.info(s"Epochs number: $epochNum")
 
     val (textToLabel: Seq[(String, Int)], categoriesMapping: Map[String, Int]) = loadRawData()
     overwriteCategories(sc, categoriesMapping)
@@ -68,7 +72,7 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
     // For large dataset, you might want to get such RDD[(String, Float)] from HDFS
     // String - text, Float - index of category
     val textToLabelRdd: RDD[(String, Float)] = sc.parallelize(textToLabelFloat, param.partitionNum)
-    val (word2Meta, word2Vec) = analyzeTexts(textToLabelRdd)
+    val (word2Meta, word2Vec) = analyzeTexts(textToLabelRdd, gloveEmbeddingsFile)
     val word2MetaBC: Broadcast[Map[String, WordMeta]] = sc.broadcast(word2Meta)
     val word2VecBC: Broadcast[Map[Float, Array[Float]]] = sc.broadcast(word2Vec)
 
@@ -103,7 +107,7 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
     val trainedModel: Module[Float] = optimizer
       .setOptimMethod(new Adagrad(learningRate = 0.01, learningRateDecay = 0.0002))
       .setValidation(Trigger.everyEpoch, validationRDD, Array(new Top1Accuracy[Float]), param.batchSize)
-      .setEndWhen(Trigger.maxEpoch(1))
+      .setEndWhen(Trigger.maxEpoch(epochNum))
       .optimize()
 
     // TODO save to the grid as binary data: @SpaceStorageType(storageType = StorageType.BINARY)
@@ -144,7 +148,7 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
 
     log.info("reading texts")
 
-    val gloveEmbeddingsFile = s"$gloveDir/$gloveFile"
+    val gloveEmbeddingsFile = s"$gloveDir/glove.6B.${embeddingDim}d.txt"
     val file = Source.fromFile(gloveEmbeddingsFile, "ISO-8859-1")
     // TODO format embeddings
     val embeddings = sc.broadcast(file.getLines().toList)
@@ -185,18 +189,6 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
 
     ssc.start()
     ssc.awaitTermination()
-
-//    //    (0 until 10).foreach { i =>
-//    //      val results2 = trainedModel.predictClass(tenRdd).take(10)
-//    //      if (!(results2 sameElements results)) log.info(s"$i Achtung!")
-//    //      if (results2.length != results.length) log.info(s"$i Achtung size!")
-//    //
-//    //      val len = results.length
-//    //      var j = 0
-//    //      while (j < len && results(j) == results2(j)) j += 1
-//    //      if (j != len) log.info(s"$i Achtung elements!")
-//    //    }
-//
   }
 
   def overwriteCategories(sc: SparkContext, categoriesMapping: Map[String, Int]): Unit = {
@@ -222,10 +214,9 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
     *
     * @return A map from word to vector
     */
-  def buildWord2Vec(word2Meta: Map[String, WordMeta]): Map[Float, Array[Float]] = {
+  def buildWord2Vec(word2Meta: Map[String, WordMeta], gloveEmbeddingsFile: String): Map[Float, Array[Float]] = {
     log.info("Indexing word vectors.")
     val preWord2Vec = MMap[Float, Array[Float]]()
-    val gloveEmbeddingsFile = s"$gloveDir/$gloveFile"
     for (line <- Source.fromFile(gloveEmbeddingsFile, "ISO-8859-1").getLines) {
       val wordAndVectorValues: Array[String] = line.split(" ")
       val word: String = wordAndVectorValues(0)
@@ -290,7 +281,7 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
     * Go through the whole data set to gather some meta info for the tokens.
     * Tokens would be discarded if the frequency ranking is less then maxWordsNum
     */
-  def analyzeTexts(dataRdd: RDD[(String, Float)])
+  def analyzeTexts(dataRdd: RDD[(String, Float)], gloveEmbeddingsFile: String)
   : (Map[String, WordMeta], Map[Float, Array[Float]]) = {
     val tokens: RDD[String] = dataRdd.flatMap { case (text: String, label: Float) =>
       SimpleTokenizer.toTokens(text)
@@ -304,7 +295,7 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
     val word2Meta: Map[String, WordMeta] = frequencies.zip(indexes).map { (item: ((String, Int), Int)) =>
       (item._1._1 /*word*/ , WordMeta(item._1._2 /*count*/ , item._2 /*index*/))
     }.toMap
-    (word2Meta, buildWord2Vec(word2Meta))
+    (word2Meta, buildWord2Vec(word2Meta, gloveEmbeddingsFile))
   }
 
   def buildWord2Meta(dataRdd: RDD[(String)]): Map[String, WordMeta] = {
@@ -384,9 +375,11 @@ abstract class IeAbstractTextClassificationParams extends Serializable {
 
   def batchSize: Int = 128
 
-  def embeddingDim: Int = Consts.embeddingsDimensions
+  def embeddingDim: Int = 100
 
   def partitionNum: Int = 4
+
+  def epochNum: Int = 1
 }
 
 
@@ -404,11 +397,7 @@ case class IeTextClassificationParams(override val baseDir: String = "./",
                                     override val maxWordsNum: Int = 20000,
                                     override val trainingSplit: Double = 0.8,
                                     override val batchSize: Int = 128,
-                                    override val embeddingDim: Int = Consts.embeddingsDimensions,
-                                    override val partitionNum: Int = 4)
+                                    override val embeddingDim: Int = 100,
+                                    override val partitionNum: Int = 4,
+                                    override val epochNum: Int = 1)
   extends IeAbstractTextClassificationParams
-
-
-object Consts {
-  val embeddingsDimensions = 50
-}

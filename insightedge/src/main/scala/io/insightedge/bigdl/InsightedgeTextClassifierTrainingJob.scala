@@ -43,6 +43,12 @@ object InsightedgeTextClassifierTrainingJob {
       opt[String]('z', "batchSize")
         .text("batchSize")
         .action((x, c) => c.copy(batchSize = x.toInt))
+      opt[String]('e', "epochNum")
+        .text("Epoch count")
+        .action((x, c) => c.copy(epochNum = x.toInt))
+      opt[String]('e', "embeddingDim")
+        .text("Embedding dimensions")
+        .action((x, c) => c.copy(embeddingDim = x.toInt))
     }
 
     localParser.parse(args, IeTextClassificationParams()).map { param =>
