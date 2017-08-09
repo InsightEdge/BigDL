@@ -10,7 +10,7 @@ import scala.beans.BeanProperty
 /**
   * @author Danylo_Hurin.
   */
-case class Text(
+case class Prediction(
                  @BeanProperty
                  @SpaceId(autoGenerate = true)
                  var id: String,
@@ -20,7 +20,10 @@ case class Text(
                  var text: String,
 
                  @BeanProperty
+                 var category: String,
+
+                 @BeanProperty
                  var label: Int) {
-  def this() = this(null, null, -1)
+  def this() = this(null, null, null, -1)
 
 }

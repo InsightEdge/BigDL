@@ -3,16 +3,16 @@
 package io.insightedge.bigdl
 
 import com.intel.analytics.bigdl.utils.LoggerFilter
+import org.apache.log4j.{Level => Levle4j, Logger => Logger4j}
 import org.slf4j.{Logger, LoggerFactory}
 import scopt.OptionParser
 
-import org.apache.log4j.{Level => Levle4j, Logger => Logger4j}
-
+import scala.language.existentials
 
 /**
   * @author Danylo_Hurin.
   */
-object InsightedgeTextPredictionJob {
+object InsightedgeTextClassifierTrainingJob {
 
   val log: Logger = LoggerFactory.getLogger(this.getClass)
   LoggerFilter.redirectSparkInfoLogs()
@@ -24,6 +24,10 @@ object InsightedgeTextPredictionJob {
         .required()
         .text("Base dir containing the training and word2Vec data")
         .action((x, c) => c.copy(baseDir = x))
+      opt[String]('m', "modelFile")
+        .required()
+        .text("Where to save trained model")
+        .action((x, c) => c.copy(modelFile = x))
       opt[String]('p', "partitionNum")
         .text("you may want to tune the partitionNum if run into spark mode")
         .action((x, c) => c.copy(partitionNum = x.toInt))
@@ -44,9 +48,8 @@ object InsightedgeTextPredictionJob {
     localParser.parse(args, IeTextClassificationParams()).map { param =>
       log.info(s"Current parameters: $param")
       val textClassification = new InsightedgeTextClassifier(param)
-      textClassification.predict()
+      textClassification.train()
     }
   }
-
 
 }
