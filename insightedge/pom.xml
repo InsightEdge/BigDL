@@ -37,15 +37,7 @@
             <groupId>com.intel.analytics.bigdl</groupId>
             <artifactId>bigdl</artifactId>
             <version>0.2.0</version>
-            <scope>provided</scope>
         </dependency>
-
-        <!--<dependency>-->
-            <!--<groupId>org.apache.kafka</groupId>-->
-            <!--<artifactId>kafka</artifactId>-->
-            <!--<version>0.8.2.2</version>-->
-            <!--<scope>provided</scope>-->
-        <!--</dependency>-->
 
         <!-- Spark -->
         <dependency>
@@ -53,6 +45,17 @@
             <artifactId>spark-core_${scala.version.short}</artifactId>
             <version>${spark.lib.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-streaming_${scala.version.short}</artifactId>
+            <version>${spark.lib.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-streaming-kafka_${scala.version.short}</artifactId>
+            <version>${spark.lib.version}</version>
         </dependency>
 
         <!-- Insightedge -->

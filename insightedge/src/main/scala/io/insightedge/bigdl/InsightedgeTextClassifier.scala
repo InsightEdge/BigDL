@@ -16,17 +16,21 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
 import com.j_spaces.core.client.SQLQuery
 import io.insightedge.bigdl.model.{Category, Prediction, TrainingText}
+import _root_.kafka.serializer.StringDecoder
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
+import org.apache.spark.streaming.dstream.InputDStream
+import org.apache.spark.streaming.kafka.KafkaUtils
+import org.apache.spark.streaming.{Seconds, StreamingContext}
+import org.insightedge.spark.context.InsightEdgeConfig
+import org.insightedge.spark.implicits.basic._
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.{ArrayBuffer, Map => MMap}
 import scala.io.Source
 import scala.language.existentials
-import org.insightedge.spark.context.InsightEdgeConfig
-import org.insightedge.spark.implicits.basic._
 
 
 /**
@@ -105,21 +109,6 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
     trainedModel.save(modelFile, overWrite = true)
     log.info(s"Model was saved to $modelFile")
 
-    val testData: Array[Sample[Float]] = validationRDD.take(10)
-    val testRdd: RDD[Sample[Float]] = sc.parallelize(testData)
-
-    val distribution: RDD[Activity] = trainedModel.predict(testRdd)
-    log.info("Distribution prediction")
-    for (elem: Activity <- distribution.take(10)) {
-      println(elem)
-    }
-
-    val labeled: RDD[Int] = trainedModel.predictClass(testRdd)
-    log.info("Labeled prediction")
-    for (elem: Int <- labeled.take(10)) {
-      println(elem)
-    }
-
     sc.stop()
   }
 
@@ -129,59 +118,84 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
       .setAppName("Text classification")
       .set("spark.task.maxFailures", "1").setInsightEdgeConfig(gsConfig)
     val sc = SparkContext.getOrCreate(conf)
-    //    val ssc = new StreamingContext(sc)
 
-    val categories = sc.gridRdd[Category]()
-    //    ssc.start()
-    //    ssc.awaitTermination()
+    val categories = sc.broadcast(sc.gridRdd[Category]().collect())
+    log.info(s"${categories.value.length} were loaded")
 
     Engine.init
     val sequenceLen = param.maxSequenceLength
     val embeddingDim = param.embeddingDim //depends on which file is chosen for training. 50d -> 50, 100d -> 100
-    val trainingSplit = param.trainingSplit
     val modelFile = param.modelFile
 
-    val (textToLabel: Seq[(String, Float)], categoriesMapping: Map[String, Int]) = loadRawData()
+    log.info("Engine init")
+    val trainedModel = sc.broadcast(Module.load[Float](modelFile))
+    log.info(s"Model was loaded from $modelFile and broadcasted")
 
-    val textOnly: Seq[String] = textToLabel.map(_._1)
-    val textRdd: RDD[String] = sc.parallelize(textOnly, param.partitionNum)
-    val word2Meta = buildWord2Meta(textRdd)
-    val word2Vec = buildWord2Vec(word2Meta)
-    val word2MetaBC: Broadcast[Map[String, WordMeta]] = sc.broadcast(word2Meta)
-    val word2VecBC: Broadcast[Map[Float, Array[Float]]] = sc.broadcast(word2Vec)
-    val tokensToLabel: RDD[Array[Float]] = textRdd.map { text => toTokens(text, word2MetaBC.value) }
+    val (brokers, topics) = "localhost:9092" -> "texts"
+    val ssc = new StreamingContext(sc, Seconds(2))
+    val topicsSet = topics.split(",").toSet
+    val kafkaParams: Map[String, String] = Map[String, String]("metadata.broker.list" -> brokers)
 
-    val shapedTokensToLabel: RDD[Array[Float]] = tokensToLabel.map { tokens => shaping(tokens, sequenceLen) }
-    val vectorizedRdd: RDD[Array[Array[Float]]] = shapedTokensToLabel
-      .map { tokens => vectorization(tokens, embeddingDim, word2VecBC.value) }
-    val sampleRDD: RDD[Sample[Float]] = vectorizedRdd.map { input: Array[Array[Float]] =>
-      val flatten: Array[Float] = input.flatten
-      val shape: Array[Int] = Array(sequenceLen, embeddingDim)
-      val tensor: Tensor[Float] = Tensor(flatten, shape).transpose(1, 2).contiguous()
-      Sample(featureTensor = tensor)
-    }
+    log.info("ready to read texts")
 
-    val Array(trainingRDD, validationRDD: RDD[Sample[Float]]) = sampleRDD.randomSplit(
-      Array(trainingSplit, 1 - trainingSplit))
+    val messages: InputDStream[(String, String)] = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
+      ssc, kafkaParams, topicsSet)
 
-    val trainedModel = Module.load[Float](modelFile)
-    log.info(s"Model was loaded from $modelFile")
+    log.info("reading texts")
 
-    val results: RDD[Int] = trainedModel.predictClass(sampleRDD)
-    overwritePredictions(sc, textRdd.zip(results), categories)
+    val gloveEmbeddingsFile = s"$gloveDir/$gloveFile"
+    val file = Source.fromFile(gloveEmbeddingsFile, "ISO-8859-1")
+    // TODO format embeddings
+    val embeddings = sc.broadcast(file.getLines().toList)
+    file.close
 
-    //    (0 until 10).foreach { i =>
-    //      val results2 = trainedModel.predictClass(tenRdd).take(10)
-    //      if (!(results2 sameElements results)) log.info(s"$i Achtung!")
-    //      if (results2.length != results.length) log.info(s"$i Achtung size!")
-    //
-    //      val len = results.length
-    //      var j = 0
-    //      while (j < len && results(j) == results2(j)) j += 1
-    //      if (j != len) log.info(s"$i Achtung elements!")
-    //    }
+    messages.foreachRDD((rdd: RDD[(String, String)]) =>
+      if (!rdd.isEmpty) {
+        println("-------------------------")
 
-    sc.stop()
+        val textRdd: RDD[String] = rdd.map(_._2)
+        val word2Meta = buildWord2Meta(textRdd)
+        val word2Vec = buildWord2Vec(word2Meta, embeddings.value)
+        val word2MetaBC: Broadcast[Map[String, WordMeta]] = sc.broadcast(word2Meta)
+        val word2VecBC: Broadcast[Map[Float, Array[Float]]] = sc.broadcast(word2Vec)
+        val tokensToLabel: RDD[Array[Float]] = textRdd.map { text => toTokens(text, word2MetaBC.value) }
+
+        val shapedTokensToLabel: RDD[Array[Float]] = tokensToLabel.map { tokens => shaping(tokens, sequenceLen) }
+        val vectorizedRdd: RDD[Array[Array[Float]]] = shapedTokensToLabel
+          .map { tokens => vectorization(tokens, embeddingDim, word2VecBC.value) }
+        val sampleRDD: RDD[Sample[Float]] = vectorizedRdd.map { input: Array[Array[Float]] =>
+          val flatten: Array[Float] = input.flatten
+          val shape: Array[Int] = Array(sequenceLen, embeddingDim)
+          val tensor: Tensor[Float] = Tensor(flatten, shape).transpose(1, 2).contiguous()
+          Sample(featureTensor = tensor)
+        }
+
+        val results: RDD[Int] = trainedModel.value.predictClass(sampleRDD)
+
+        val predictions = textRdd.zip(results).map { case (text, prediction) =>
+          val category = categories.value.filter(_.label == prediction)(0)
+          Prediction(null, text, category.name, prediction)
+        }
+        predictions.saveToGrid()
+        log.info(s"Saved predictions to the grid")
+        println("-------------------------")
+      }
+    )
+
+    ssc.start()
+    ssc.awaitTermination()
+
+//    //    (0 until 10).foreach { i =>
+//    //      val results2 = trainedModel.predictClass(tenRdd).take(10)
+//    //      if (!(results2 sameElements results)) log.info(s"$i Achtung!")
+//    //      if (results2.length != results.length) log.info(s"$i Achtung size!")
+//    //
+//    //      val len = results.length
+//    //      var j = 0
+//    //      while (j < len && results(j) == results2(j)) j += 1
+//    //      if (j != len) log.info(s"$i Achtung elements!")
+//    //    }
+//
   }
 
   def overwriteCategories(sc: SparkContext, categoriesMapping: Map[String, Int]): Unit = {
@@ -201,6 +215,7 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
     sc.parallelize(texts).saveToGrid()
     log.info(s"Saved ${texts.length} texts to the grid")
   }
+
   /**
     * Load the pre-trained word2Vec
     *
@@ -211,6 +226,22 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
     val preWord2Vec = MMap[Float, Array[Float]]()
     val gloveEmbeddingsFile = s"$gloveDir/$gloveFile"
     for (line <- Source.fromFile(gloveEmbeddingsFile, "ISO-8859-1").getLines) {
+      val wordAndVectorValues: Array[String] = line.split(" ")
+      val word: String = wordAndVectorValues(0)
+      if (word2Meta.contains(word)) {
+        val vectorValues: Array[String] = wordAndVectorValues.slice(1, wordAndVectorValues.length)
+        val coefs: Array[Float] = vectorValues.map(_.toFloat)
+        preWord2Vec.put(word2Meta(word).index.toFloat, coefs)
+      }
+    }
+    log.info(s"Found ${preWord2Vec.size} word vectors.")
+    preWord2Vec.toMap
+  }
+
+  def buildWord2Vec(word2Meta: Map[String, WordMeta], embeddings: Seq[String]): Map[Float, Array[Float]] = {
+    log.info("Indexing word vectors.")
+    val preWord2Vec = MMap[Float, Array[Float]]()
+    for (line <- embeddings) {
       val wordAndVectorValues: Array[String] = line.split(" ")
       val word: String = wordAndVectorValues(0)
       if (word2Meta.contains(word)) {
