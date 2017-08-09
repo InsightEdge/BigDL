@@ -17,6 +17,7 @@ import com.intel.analytics.bigdl.utils.Engine
 import com.j_spaces.core.client.SQLQuery
 import io.insightedge.bigdl.model.{Category, Prediction, TrainingText}
 import _root_.kafka.serializer.StringDecoder
+import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
