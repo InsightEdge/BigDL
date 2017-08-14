@@ -43,6 +43,9 @@ object InsightedgeTextClassifierPredictionJob {
       opt[String]('z', "batchSize")
         .text("batchSize")
         .action((x, c) => c.copy(batchSize = x.toInt))
+      opt[String]('e', "embeddingDim")
+        .text("Embeddings dimensions")
+        .action((x, c) => c.copy(embeddingDim = x.toInt))
     }
 
     localParser.parse(args, IeTextClassificationParams()).map { param =>

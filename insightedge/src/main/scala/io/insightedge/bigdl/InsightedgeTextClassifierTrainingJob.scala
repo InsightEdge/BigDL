@@ -47,7 +47,7 @@ object InsightedgeTextClassifierTrainingJob {
         .text("Epoch count")
         .action((x, c) => c.copy(epochNum = x.toInt))
       opt[String]('e', "embeddingDim")
-        .text("Embedding dimensions")
+        .text("Embeddings dimensions")
         .action((x, c) => c.copy(embeddingDim = x.toInt))
     }
 
