@@ -3,10 +3,9 @@
 package io.insightedge.bigdl
 
 import com.intel.analytics.bigdl.utils.LoggerFilter
+import org.apache.log4j.{Level => Levle4j, Logger => Logger4j}
 import org.slf4j.{Logger, LoggerFactory}
 import scopt.OptionParser
-
-import org.apache.log4j.{Level => Levle4j, Logger => Logger4j}
 
 
 /**

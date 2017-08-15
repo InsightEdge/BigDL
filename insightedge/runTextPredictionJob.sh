@@ -9,5 +9,5 @@ MODEL_FILE="/code/bigdl-fork/data/trained-model/classifier.bigdl" # where traine
 $INSIGHTEDGE_HOME/bin/insightedge-submit --master ${MASTER} --driver-memory 4g --executor-memory 4g  \
            --total-executor-cores 2 --executor-cores 2 \
            --class io.insightedge.bigdl.InsightedgeTextClassifierPredictionJob \
-           ./target/insightedge-0.2.0-jar-with-dependencies.jar \
+           ./spark/target/spark-0.2.0-jar-with-dependencies.jar \
            --batchSize 128 --baseDir ${BASE_DIR} --partitionNum 4 --modelFile ${MODEL_FILE} --embeddingDim 50

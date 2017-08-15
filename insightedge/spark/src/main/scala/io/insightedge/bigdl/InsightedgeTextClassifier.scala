@@ -5,19 +5,17 @@ package io.insightedge.bigdl
 import java.io.File
 import java.util
 
+import _root_.kafka.serializer.StringDecoder
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.example.utils.SimpleTokenizer._
 import com.intel.analytics.bigdl.example.utils.{SimpleTokenizer, WordMeta}
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, _}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
 import com.j_spaces.core.client.SQLQuery
 import io.insightedge.bigdl.model.{Category, Prediction, TrainingText}
-import _root_.kafka.serializer.StringDecoder
-import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
