@@ -23,9 +23,12 @@ case class CallSession(
                  var category: String,
 
                  @BeanProperty // dummy data
-                 var agentId: String
+                 var agentId: String,
+
+                 @BeanProperty
+                 var counter: Long
 ) {
-  def this() = this(null, null, null, null)
+  def this() = this(null, null, null, null, -1)
 
 }
 

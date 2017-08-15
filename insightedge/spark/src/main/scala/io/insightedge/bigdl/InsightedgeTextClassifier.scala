@@ -177,7 +177,7 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
 
         val predictions = textRdd.zip(results).map { case (text, prediction) =>
           val category = categories.value.filter(_.label == prediction)(0)
-          Prediction(null, text, category.name, prediction)
+          Prediction(null, text, category.name, prediction, 0)
         }
         predictions.saveToGrid()
         log.info(s"Saved predictions to the grid")
@@ -351,7 +351,7 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
     val categories = categoriesRdd.collect()
     val predictions = rawPredictions.map { case (text, label) =>
       val category = categories.filter(_.label == label)(0)
-      Prediction(null, text, category.name, label)
+      Prediction(null, text, category.name, label, 0)
     }
     predictions.saveToGrid()
     log.info(s"Saved predictions to the grid")

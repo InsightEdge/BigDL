@@ -23,7 +23,10 @@ case class Prediction(
                  var category: String,
 
                  @BeanProperty
-                 var label: Int) {
-  def this() = this(null, null, null, -1)
+                 var label: Int,
+
+                 @BeanProperty
+                 var flag: Int) {
+  def this() = this(null, null, null, -1, -1)
 
 }
