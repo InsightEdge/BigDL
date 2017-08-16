@@ -18,6 +18,7 @@ Steps:
 * Start Insightedge in demo mode: ```sh ie-demo.sh```
 * Train text classifier model: ```sh runModelTrainingJob.sh```
 * In separate terminal tab start kafka producer: ```sh runKafkaProducer.sh```. To verify that producer is sending messages you can run consumer which prints messages in the console: ```sh kafka-cosumer.sh```
+* Deploy processor-0.2.0-jar-with-dependencies.jar in GS UI.
 * In separate terminal tab start Spark streaming for predictions: ```sh runTextPredictionJob.sh```.
 * Open GS UI and verify that predictions are saved in io.insightedge.bigdl.model.Prediction object.
 * Start web server to track CallSessions objects: ```cd web && sbt web/run```. Go to localhost:9000
