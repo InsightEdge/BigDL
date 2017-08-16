@@ -34,7 +34,7 @@ object FlightEndpoint extends Controller {
 //  }
 
   def getLastFlights(streamedRowId: String) = Action { implicit request =>
-    val query = new SQLQuery[SpaceDocument]("io.insightedge.bigdl.model.CallSession2", "counter > ? ORDER BY counter ASC", QueryResultType.DOCUMENT)
+    val query = new SQLQuery[SpaceDocument]("io.insightedge.bigdl.model.CallSession", "counter > ? ORDER BY counter ASC", QueryResultType.DOCUMENT)
     println("rowid: " + streamedRowId)
     query.setParameter(1, streamedRowId.toLong)
     val categories = grid.readMultiple(query)

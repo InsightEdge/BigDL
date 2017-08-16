@@ -19,8 +19,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.logging.Logger;
 
-import io.insightedge.bigdl.model.CallSession;
 import io.insightedge.bigdl.model.Prediction;
+import io.insightedge.bigdl.model.CallSession;
 
 
 @EventDriven
@@ -47,7 +47,7 @@ public class Processor {
 
     @EventTemplate
     SQLQuery<Prediction> template() {
-        SQLQuery<Prediction> query = new SQLQuery<Prediction>(Prediction.class, "flag == 0");
+        SQLQuery<Prediction> query = new SQLQuery<Prediction>(Prediction.class, "flag = 0");
         return query;
     }
 
@@ -64,7 +64,7 @@ public class Processor {
     @SpaceDataEvent
     public Prediction execute(Prediction prediction) {
         //process Data here
-        CallSession callSession = new CallSession(prediction.id(), prediction.text(), prediction.category(), "123", counter);
+        CallSession callSession = new CallSession(counter + "", prediction.text(), prediction.category(), "123", counter);
         prediction.setFlag(1);
         gigaMySpace.write(callSession);
         counter++;

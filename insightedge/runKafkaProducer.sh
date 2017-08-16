@@ -3,7 +3,7 @@
 #cd /code/bigdl-fork/insightedge
 #mvn clean package
 
-DATA_DIR="/code/bigdl-fork/data/textclassification/20_newsgroup" # only newsgroups, don't need GloVe here
+DATA_DIR="$IE_BIGDL_DIR/data/textclassification/20_newsgroup" # only newsgroups, don't need GloVe here
 FILES_PER_BATCH=1
 PAUSE_BETWEEN_BATCHES=2 # in seconds
 
