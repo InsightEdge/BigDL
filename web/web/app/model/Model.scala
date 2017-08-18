@@ -16,3 +16,8 @@ object grid {
                    )
 
 }
+
+object web {
+
+  case class Speech(speech: String)
+}

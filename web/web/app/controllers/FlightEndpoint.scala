@@ -29,9 +29,6 @@ object FlightEndpoint extends Controller {
     new GigaSpaceConfigurer(spaceConfigurer).create()
   }
 
-//  def getCategories() = Action { implicit request =>
-//
-//  }
 
   def getLastFlights(streamedRowId: String) = Action { implicit request =>
     val query = new SQLQuery[SpaceDocument]("io.insightedge.bigdl.model.CallSession", "counter > ? ORDER BY counter ASC", QueryResultType.DOCUMENT)
