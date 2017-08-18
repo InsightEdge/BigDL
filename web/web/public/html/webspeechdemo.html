@@ -122,8 +122,7 @@
     <button id="email_button" class="button" onclick="emailButton()">
       Send to Kafka</button>
     <div id="email_info" class="info">
-      Text sent to default email application.<br>
-      (See chrome://settings/handlers to change.)
+      Text was sent to Kafka endpoint.<br>
     </div>
   </div>
   <p>
@@ -307,17 +306,14 @@ if (!('webkitSpeechRecognition' in window)) {
 }
 
 function submitText(text) {
-//    var text = "myText"
     console.log(text)
-    //var route = jsRoutes.controllers.KafkaEndpoint.submitFlight(text);
     var flightToSubmit = JSON.stringify({
                                             speech: text
                                         });
-    var recognizedSpeech = JSON.parse(flightToSubmit)
     $.ajax({
                url: "/flights",
                type: "POST",
-               data: recognizedSpeech,
+               data: flightToSubmit,
                contentType: "application/json",
                success: function(newId) {
                    console.log("Yay!")
@@ -343,14 +339,7 @@ function capitalize(s) {
 }
 
 function sendToKafka() {
-
-//  var n = final_transcript.indexOf('\n');
-//  if (n < 0 || n >= 80) {
-//    n = 40 + final_transcript.substring(40).indexOf(' ');
-//  }
-//  var subject = encodeURI(final_transcript.substring(0, n));
-//  var body = encodeURI(final_transcript.substring(n + 1));
-//  window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
+    submitText(final_transcript)
 }
 
 function copyButton() {

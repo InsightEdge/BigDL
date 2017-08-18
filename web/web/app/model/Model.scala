@@ -19,5 +19,7 @@ object grid {
 
 object web {
 
-  case class Speech(speech: String)
+  case class Speech(speech: String) {
+    override def toString: String = speech
+  }
 }
