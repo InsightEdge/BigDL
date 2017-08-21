@@ -6,8 +6,9 @@
 GET         /                               controllers.WebEndpoint.index
 
 #TODO params
-GET         /flights/:streamedRowId                controllers.FlightEndpoint.getLastFlights(streamedRowId: String)
-POST        /flights                               controllers.KafkaEndpoint.submitFlight
+GET         /callSession/:streamedRowId           controllers.CallSessionEndpoint.getLastCallSessions(streamedRowId: String)
+
+POST        /speech                               controllers.KafkaEndpoint.submitSpeech
 
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                   controllers.Assets.at(path="/public", file)

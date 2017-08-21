@@ -14,21 +14,10 @@ object KafkaEndpoint extends Controller {
 
   val counter = new AtomicInteger(0)
 
-  implicit val flightsReader = Json.reads[Speech]
-//  implicit val submittedFlightsReader = Json.reads[SubmittedFlight]
+  implicit val speechReader = Json.reads[Speech]
 
-  def submitFlight = Action(parse.json) { request =>
+  def submitSpeech = Action(parse.json) { request =>
     parseJson(request) { speech: Speech =>
-      println(speech)
-      println(speech)
-      println(speech)
-      println(speech)
-      println(speech)
-      println(speech)
-      println(speech)
-      println(speech)
-      println(speech)
-      println(speech)
       val rowId = counter.incrementAndGet()
       send(speech.toString(), "texts")
       Created(rowId.toString)

@@ -11,9 +11,9 @@
 
         <link rel="stylesheet" type="text/css" href="@routes.Assets.at("css/main.css")" />
             @helper.javascriptRouter("jsRoutes")(
-                routes.javascript.FlightEndpoint.getLastFlights
+                routes.javascript.CallSessionEndpoint.getLastCallSessions
         )
-        <script type="text/javascript" src="@routes.Assets.at("js/flights.js")"></script>
+        <script type="text/javascript" src="@routes.Assets.at("js/callSessions.js")"></script>
     </head>
     <body>
         @nav()

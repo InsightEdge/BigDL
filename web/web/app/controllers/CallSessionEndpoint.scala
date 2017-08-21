@@ -12,7 +12,7 @@ import play.api.mvc._
 import com.gigaspaces.query.QueryResultType
 
 
-object FlightEndpoint extends Controller {
+object CallSessionEndpoint extends Controller {
 
   val STREAMED = "1"
   val SUBMITTED = "0"
@@ -21,27 +21,22 @@ object FlightEndpoint extends Controller {
     override def writes(f: CallSession): JsValue = JsString(f.getClass.getSimpleName)
   }
 
-  val flightsWriter = Json.writes[CallSession]
-  val flightsListWriter = Writes.list[CallSession](flightsWriter)
+  val callSessionWriter = Json.writes[CallSession]
+  val callSessionListWriter = Writes.list[CallSession](callSessionWriter)
 
   val grid = {
     val spaceConfigurer = new SpaceProxyConfigurer("insightedge-space").lookupGroups("insightedge").lookupLocators("127.0.0.1:4174")
     new GigaSpaceConfigurer(spaceConfigurer).create()
   }
 
-
-  def getLastFlights(streamedRowId: String) = Action { implicit request =>
+  def getLastCallSessions(streamedRowId: String) = Action { implicit request =>
     val query = new SQLQuery[SpaceDocument]("io.insightedge.bigdl.model.CallSession", "counter > ? ORDER BY counter ASC", QueryResultType.DOCUMENT)
-    println("rowid: " + streamedRowId)
     query.setParameter(1, streamedRowId.toLong)
-    val categories = grid.readMultiple(query)
-    println(categories.length)
-    val flights = categories.map(toFlight).toList
-
-    Ok(Json.toJson(flights)(flightsListWriter))
+    val callSessions = grid.readMultiple(query)
+    Ok(Json.toJson(callSessions.map(toCallSession).toList)(callSessionListWriter))
   }
 
-  def toFlight(sd: SpaceDocument): CallSession = {
+  def toCallSession(sd: SpaceDocument): CallSession = {
     CallSession(
       sd.getProperty[String]("id"),
       sd.getProperty[String]("category"),
