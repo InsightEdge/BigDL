@@ -2,76 +2,112 @@
 
 @main("callSessions") {
 
-<div class="container">
-
-    <div id="info">
-        <p id="info_start">Click on the microphone icon and begin speaking.</p>
-        <p id="info_speak_now">Speak now.</p>
-        <p id="info_no_speech">No speech was detected. You may need to adjust your
-            <a href="//support.google.com/chrome/bin/answer.py?hl=en&amp;answer=1407892">
-                microphone settings</a>.</p>
-        <p id="info_no_microphone" style="display:none">
-            No microphone was found. Ensure that a microphone is installed and that
-            <a href="//support.google.com/chrome/bin/answer.py?hl=en&amp;answer=1407892">
-                microphone settings</a> are configured correctly.</p>
-        <p id="info_allow">Click the "Allow" button above to enable your microphone.</p>
-        <p id="info_denied">Permission to use microphone was denied.</p>
-        <p id="info_blocked">Permission to use microphone is blocked. To change,
-            go to chrome://settings/contentExceptions#media-stream</p>
-        <p id="info_upgrade">Web Speech API is not supported by this browser.
-            Upgrade to <a href="//www.google.com/chrome">Chrome</a>
-            version 25 or later.</p>
-    </div>
-    <div class="right">
-        <button id="start_button" onclick="startButton(event)">
-            <img id="start_img" src="@routes.Assets.at("img/mic.gif")" alt="Start"></button>
-    </div>
-    <div id="results">
-        <span id="final_span" class="final"></span>
-        <span id="interim_span" class="interim"></span>
-        <p>
-    </div>
-    <div class="center">
-        @*<div class="sidebyside" style="text-align:right">*@
-        @*<button id="copy_button" class="button" onclick="copyButton()">*@
-        @*Copy and Paste</button>*@
-        @*<div id="copy_info" class="info">*@
-        @*Press Control-C to copy text.<br>(Command-C on Mac.)*@
-        @*</div>*@
-        @*</div>*@
-        @*<div class="sidebyside">*@
-        @*<button id="email_button" class="button" onclick="emailButton()">*@
-        @*Send to Kafka</button>*@
-        @*<div id="email_info" class="info">*@
-        @*Text was sent to Kafka endpoint.<br>*@
-        @*</div>*@
-        @*</div>*@
-        @*<p>*@
-        <div id="div_language">
-            <select id="select_language" onchange="updateCountry()"></select>
-                &nbsp;&nbsp;
-            <select id="select_dialect"></select>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">Call session assistant</a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="#">Help</a></li>
+                </ul>
+                <form class="navbar-form navbar-right">
+                    <input type="text" class="form-control" placeholder="Search...">
+                </form>
+            </div>
         </div>
+    </nav>
+
+    <div class="container-fluid">
+
+        <div class="row">
+            <div class="col-sm-3 col-md-2 sidebar">
+                <div class="center" style="margin-top: 10px;
+                    margin-bottom: 10px">
+                    <img id="call-center_img" src="@routes.Assets.at("img/call-center.png")">
+                </div>
+                <ul class="nav nav-sidebar">
+                    <li><a href="#">TensorFlow Analytics</a></li>
+                </ul>
+                <div style="position: absolute;bottom: 0;" class="center">
+                    <img id="call-center_img" src="@routes.Assets.at("img/insightedge-logo.png")">
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            <h2 class="page-header">Speech recognition module</h2>
+            <div id="info">
+                <p id="info_start">Click on the microphone icon and begin speaking.</p>
+                <p id="info_speak_now">Speak now.</p>
+                @*<p id="info_sent_to_kafka">Speech was sent to Kafka</p>*@
+                <p id="info_no_speech">No speech was detected. You may need to adjust your
+                    <a href="//support.google.com/chrome/bin/answer.py?hl=en&amp;answer=1407892">
+                        microphone settings</a>.</p>
+                <p id="info_no_microphone" style="display: none">
+                    No microphone was found. Ensure that a microphone is installed and that
+                    <a href="//support.google.com/chrome/bin/answer.py?hl=en&amp;answer=1407892">
+                        microphone settings</a> are configured correctly.</p>
+                <p id="info_allow">Click the "Allow" button above to enable your microphone.</p>
+                <p id="info_denied">Permission to use microphone was denied.</p>
+                <p id="info_blocked">Permission to use microphone is blocked. To change,
+                    go to chrome://settings/contentExceptions#media-stream</p>
+                <p id="info_upgrade">Web Speech API is not supported by this browser.
+                    Upgrade to <a href="//www.google.com/chrome">Chrome</a>
+                    version 25 or later.</p>
+            </div>
+            <div class="right">
+                <button id="start_button" onclick="startButton(event)">
+                    <img id="start_img" src="@routes.Assets.at("img/mic.gif")" alt="Start"></button>
+            </div>
+            <div id="results">
+                <span id="final_span" class="final"></span>
+                <span id="interim_span" class="interim"></span>
+
+            </div>
+            <div id="alertSent" class="alert alert-success center" role="alert" style="width: 180px;">
+                <strong>Text was sent</strong>
+            </div>
+            <div class="center">
+                <div id="div_language">
+                    <select id="select_language" onchange="updateCountry()" class="btn btn-primary"></select>
+                        &nbsp;&nbsp;
+                    <select id="select_dialect" class="btn btn-primary"></select>
+                </div>
+            </div>
+
+            <h2 class="sub-header">Call sessions <small id="submittedCount"></small></h2>
+            <div class="table-responsive scrolled-table">
+                <table id="callSessionsTable" class="table table-condensed">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Category</th>
+                            <th>Agent Id</th>
+                            <th>Text</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
     </div>
-
-
-    <h2 class="sub-header">Call sessions <small id="submittedCount"></small></h2>
-    <div class="table-responsive scrolled-table">
-        <table id="callSessionsTable" class="table table-striped table-condensed">
-            <tbody>
-            <tr>
-                <th>Id</th>
-                <th>Category</th>
-                <th>Agent Id</th>
-                <th>Text</th>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-
-</div>
 
     <script>
+
+            $("#alertSent").hide();
+
+
+
             var langs =
                     [['Afrikaans',       ['af-ZA']],
                         ['Bahasa Indonesia',['id-ID']],
@@ -139,8 +175,6 @@
             var select_language = document.getElementById('select_language');
             for (var i = 0; i < langs.length; i++) {
                 select_language.options[i] = new Option(langs[i][0], i);
-//                $('#select_language').options[i] = new Option(langs[i][0], i);
-//                select_language.options[i] = new Option(langs[i][0], i);
             }
             select_language.selectedIndex = 6;
             updateCountry();
@@ -208,7 +242,10 @@
                     }
                     start_img.src = '@routes.Assets.at("img/mic.gif")';
                     if (!final_transcript) {
-                        showInfo('info_start');
+                        showInfo('info_start')
+//                        setTimeout(function(){ showInfo('info_start'); }, 3000);
+//                        setTimeout(function(){ alert("Hello"); }, 3000);
+//                        $('#info_start').fadeIn().show();
                         return;
                     }
                     showInfo('');
@@ -250,6 +287,9 @@
                            contentType: "application/json",
                            success: function(newId) {
                                console.log("OK, counter: " + newId)
+//                               $("#alertSent").show();
+//                               $("#alertSent").delay(3000).fadeOut()
+//                               $("#info_sent_to_kafka").show()
                            }
                        });
                 console.log("Speech was sent: " + speechToSend);
@@ -302,9 +342,9 @@
                 if (recognizing) {
                     recognition.stop();
                     return;
+                    recognition.lang = select_dialect.value;
                 }
                 final_transcript = '';
-                recognition.lang = select_dialect.value;
                 recognition.start();
                 ignore_onend = false;
                 final_span.innerHTML = '';
