@@ -31,6 +31,9 @@ import scala.collection.mutable.{ArrayBuffer, Map => MMap}
 import scala.io.Source
 import scala.language.existentials
 
+import com.intel.analytics.bigdl.visualization.ValidationSummary
+import com.intel.analytics.bigdl.visualization.TrainSummary
+
 
 /**
   * @author Danylo_Hurin.
@@ -96,11 +99,12 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
       batchSize = param.batchSize
     )
 
-//    val logdir = "/tmp/bigdl_summaries"
-//    val trainSummary = TrainSummary(logdir, "Text classification")
-//    val validationSummary = ValidationSummary(logdir, "Text classification")
-//    optimizer.setTrainSummary(trainSummary)
-//    optimizer.setValidationSummary(validationSummary)
+    val logdir = "" +
+      ""
+    val trainSummary = TrainSummary(logdir, "Text classification")
+    val validationSummary = ValidationSummary(logdir, "Text classification")
+    optimizer.setTrainSummary(trainSummary)
+    optimizer.setValidationSummary(validationSummary)
 
     val trainedModel: Module[Float] = optimizer
       .setOptimMethod(new Adagrad(learningRate = 0.01, learningRateDecay = 0.0002))
