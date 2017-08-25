@@ -17,6 +17,7 @@ function initialLoad() {
                 $.demo.counter += 1;
             }
             $('#submittedCount').text($.demo.counter)
+            $('#inprocessCallsCount').text($.demo.inprocessCounter)
 
         });
     })
@@ -27,11 +28,6 @@ function initialLoad() {
 function insertCallSession(callSession) {
     row = toSubmittedRow(callSession)
     $('#callSessionsTable').prepend(row)
-    // if ($.demo.counter > 0) {
-    //     $('#callSessionsTable tr:first').after(row);
-    // } else {
-    //     $('#callSessionsTable tr:last').after(row);
-    // }
 }
 
 function getCallSessions() {
@@ -59,6 +55,8 @@ function removeInprocessRow(callSession) {
         var speech = speechTd.html();
         if (callSession.text === speech) {
             tr_row.remove()
+            $.demo.inprocessCounter -= 1
+            $('#inprocessCallsCount').text($.demo.inprocessCounter)
         }
     });
 

@@ -85,8 +85,8 @@
                 <table id="inprocessCallsTable" class="table table-condensed table-striped">
                     <thead>
                         <tr>
-                            <th>Id</th>
-                            <th>Text</th>
+                            <th style="width: 10%">Id</th>
+                            <th style="width: 90%">Text</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -265,6 +265,7 @@
                 console.log(row)
                 $('#inprocessCallsTable').prepend(row);
                 $.demo.inprocessCounter += 1
+                $('#inprocessCallsCount').text($.demo.inprocessCounter)
             }
 
             function toInprocessRow(speech, counter) {
