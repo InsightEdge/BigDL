@@ -79,17 +79,32 @@
             <div id="alertSent" class="alert alert-success center" role="alert" style="width: 180px;">
                 <strong>Text was sent</strong>
             </div>
-            <div class="center">
-                <div id="div_language">
-                    <select id="select_language" onchange="updateCountry()" class="btn btn-primary"></select>
-                        &nbsp;&nbsp;
-                    <select id="select_dialect" class="btn btn-primary"></select>
-                </div>
+            @*<div class="center">*@
+                @*<div id="div_language">*@
+                    @*<select id="select_language" onchange="updateCountry()" class="btn btn-primary"></select>*@
+                        @*&nbsp;&nbsp;*@
+                    @*<select id="select_dialect" class="btn btn-primary"></select>*@
+                @*</div>*@
+            @*</div>*@
+
+            <h2 class="sub-header"> In-process calls <small id="inprocessCallsCount"></small></h2>
+            <div class="table-responsive scrolled-table" style="height: 150px;">
+                <table id="inprocessCallsTable" class="table table-condensed table-striped">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Text</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
             </div>
 
             <h2 class="sub-header">Call sessions <small id="submittedCount"></small></h2>
             <div class="table-responsive scrolled-table">
-                <table id="callSessionsTable" class="table table-condensed">
+                <table id="callSessionsTable" class="table table-condensed table-striped">
                     <thead>
                         <tr>
                             <th>Id</th>
@@ -112,93 +127,27 @@
 
             $("#alertSent").hide();
 
-
-
-            var langs =
-                    [['Afrikaans',       ['af-ZA']],
-                        ['Bahasa Indonesia',['id-ID']],
-                        ['Bahasa Melayu',   ['ms-MY']],
-                        ['Català',          ['ca-ES']],
-                        ['Čeština',         ['cs-CZ']],
-                        ['Deutsch',         ['de-DE']],
-                        ['English',         ['en-AU', 'Australia'],
-                            ['en-CA', 'Canada'],
-                            ['en-IN', 'India'],
-                            ['en-NZ', 'New Zealand'],
-                            ['en-ZA', 'South Africa'],
-                            ['en-GB', 'United Kingdom'],
-                            ['en-US', 'United States']],
-                        ['Español',         ['es-AR', 'Argentina'],
-                            ['es-BO', 'Bolivia'],
-                            ['es-CL', 'Chile'],
-                            ['es-CO', 'Colombia'],
-                            ['es-CR', 'Costa Rica'],
-                            ['es-EC', 'Ecuador'],
-                            ['es-SV', 'El Salvador'],
-                            ['es-ES', 'España'],
-                            ['es-US', 'Estados Unidos'],
-                            ['es-GT', 'Guatemala'],
-                            ['es-HN', 'Honduras'],
-                            ['es-MX', 'México'],
-                            ['es-NI', 'Nicaragua'],
-                            ['es-PA', 'Panamá'],
-                            ['es-PY', 'Paraguay'],
-                            ['es-PE', 'Perú'],
-                            ['es-PR', 'Puerto Rico'],
-                            ['es-DO', 'República Dominicana'],
-                            ['es-UY', 'Uruguay'],
-                            ['es-VE', 'Venezuela']],
-                        ['Euskara',         ['eu-ES']],
-                        ['Français',        ['fr-FR']],
-                        ['Galego',          ['gl-ES']],
-                        ['Hrvatski',        ['hr_HR']],
-                        ['IsiZulu',         ['zu-ZA']],
-                        ['Íslenska',        ['is-IS']],
-                        ['Italiano',        ['it-IT', 'Italia'],
-                            ['it-CH', 'Svizzera']],
-                        ['Magyar',          ['hu-HU']],
-                        ['Nederlands',      ['nl-NL']],
-                        ['Norsk bokmål',    ['nb-NO']],
-                        ['Polski',          ['pl-PL']],
-                        ['Português',       ['pt-BR', 'Brasil'],
-                            ['pt-PT', 'Portugal']],
-                        ['Română',          ['ro-RO']],
-                        ['Slovenčina',      ['sk-SK']],
-                        ['Suomi',           ['fi-FI']],
-                        ['Svenska',         ['sv-SE']],
-                        ['Türkçe',          ['tr-TR']],
-                        ['български',       ['bg-BG']],
-                        ['Pусский',         ['ru-RU']],
-                        ['Српски',          ['sr-RS']],
-                        ['한국어',            ['ko-KR']],
-                        ['中文',             ['cmn-Hans-CN', '普通话 (中国大陆)'],
-                            ['cmn-Hans-HK', '普通话 (香港)'],
-                            ['cmn-Hant-TW', '中文 (台灣)'],
-                            ['yue-Hant-HK', '粵語 (香港)']],
-                        ['日本語',           ['ja-JP']],
-                        ['Lingua latīna',   ['la']]];
-
-            var select_language = document.getElementById('select_language');
-            for (var i = 0; i < langs.length; i++) {
-                select_language.options[i] = new Option(langs[i][0], i);
-            }
-            select_language.selectedIndex = 6;
-            updateCountry();
-            var select_dialect = document.getElementById('select_dialect');
-            select_dialect.selectedIndex = 6;
+//            var select_language = document.getElementById('select_language');
+//            for (var i = 0; i < langs.length; i++) {
+//                select_language.options[i] = new Option(langs[i][0], i);
+//            }
+//            select_language.selectedIndex = 6;
+//            updateCountry();
+//            var select_dialect = document.getElementById('select_dialect');
+//            select_dialect.selectedIndex = 6;
             showInfo('info_start');
 
-            function updateCountry() {
-                var select_dialect = document.getElementById('select_dialect');
-                for (var i = select_dialect.options.length - 1; i >= 0; i--) {
-                    select_dialect.remove(i);
-                }
-                var list = langs[select_language.selectedIndex];
-                for (var i = 1; i < list.length; i++) {
-                    select_dialect.options.add(new Option(list[i][1], list[i][0]));
-                }
-                select_dialect.style.visibility = list[1].length == 1 ? 'hidden' : 'visible';
-            }
+//            function updateCountry() {
+//                var select_dialect = document.getElementById('select_dialect');
+//                for (var i = select_dialect.options.length - 1; i >= 0; i--) {
+//                    select_dialect.remove(i);
+//                }
+//                var list = langs[select_language.selectedIndex];
+//                for (var i = 1; i < list.length; i++) {
+//                    select_dialect.options.add(new Option(list[i][1], list[i][0]));
+//                }
+//                select_dialect.style.visibility = list[1].length == 1 ? 'hidden' : 'visible';
+//            }
 
             var create_email = false;
             var final_transcript = '';
@@ -278,13 +227,14 @@
                     final_transcript = capitalize(final_transcript);
                     final_span.innerHTML = linebreak(final_transcript);
                     interim_span.innerHTML = linebreak(interim_transcript);
-                    if (final_transcript || interim_transcript) {
-                        showButtons('inline-block');
-                    }
+//                    if (final_transcript || interim_transcript) {
+//                        showButtons('inline-block');
+//                    }
                 };
             }
 
             function submitText(text) {
+                insertInprocessCall(text);
                 var speechToSend = JSON.stringify({speech: text});
                 $.ajax({
                            url: "/speech",
@@ -321,34 +271,34 @@
                 submitText(final_transcript)
             }
 
-            function copyButton() {
-                if (recognizing) {
-                    recognizing = false;
-                    recognition.stop();
-                }
-//                copy_button.style.display = 'none';
-//                copy_info.style.display = 'inline-block';
-                showInfo('');
-            }
-
-            function emailButton() {
-                if (recognizing) {
-                    create_email = true;
-                    recognizing = false;
-                    recognition.stop();
-                } else {
-                    sendToKafka();
-                }
-//                email_button.style.display = 'none';
-//                email_info.style.display = 'inline-block';
-                showInfo('');
-            }
+//            function copyButton() {
+//                if (recognizing) {
+//                    recognizing = false;
+//                    recognition.stop();
+//                }
+////                copy_button.style.display = 'none';
+////                copy_info.style.display = 'inline-block';
+//                showInfo('');
+//            }
+//
+//            function emailButton() {
+//                if (recognizing) {
+//                    create_email = true;
+//                    recognizing = false;
+//                    recognition.stop();
+//                } else {
+//                    sendToKafka();
+//                }
+////                email_button.style.display = 'none';
+////                email_info.style.display = 'inline-block';
+//                showInfo('');
+//            }
 
             function startButton(event) {
                 if (recognizing) {
                     recognition.stop();
                     return;
-                    recognition.lang = select_dialect.value;
+//                    recognition.lang = select_dialect.value;
                 }
                 final_transcript = '';
                 recognition.start();
@@ -357,7 +307,7 @@
                 interim_span.innerHTML = '';
                 start_img.src = '@routes.Assets.at("img/mic-slash.gif")';
                 showInfo('info_allow');
-                showButtons('none');
+//                showButtons('none');
                 start_timestamp = event.timeStamp;
             }
 
@@ -374,17 +324,36 @@
                 }
             }
 
-            var current_style;
-            function showButtons(style) {
-                if (style == current_style) {
-                    return;
-                }
-                current_style = style;
+//            var current_style;
+//            function showButtons(style) {
+//                if (style == current_style) {
+//                    return;
+//                }
+//                current_style = style;
 //                copy_button.style.display = style;
 //                email_button.style.display = style;
 //                copy_info.style.display = 'none';
 //                email_info.style.display = 'none';
+//            }
+
+            function insertInprocessCall(speech) {
+                row = toInprocessRow(speech, $.demo.inprocessCounter)
+                console.log(row)
+                $('#inprocessCallsTable').prepend(row);
+                $.demo.inprocessCounter += 1
             }
+
+            function toInprocessRow(speech, counter) {
+                var row = [];
+                row.push('<tr id="inprocess_' + counter + '">');
+                row.push('<td>'); row.push(counter); row.push('</td>');
+                row.push('<td id="inprocess_speech">'); row.push(speech);  row.push('</td>');
+                row.push('</tr>')
+                var combinedRow = row.join("");
+                return combinedRow;
+            }
+
+
     </script>
 
 }

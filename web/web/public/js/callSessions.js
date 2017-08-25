@@ -2,6 +2,7 @@ $(function () {
     $.demo = {};
     $.demo.refreshRate = 2000;
     $.demo.counter = 0;
+    $.demo.inprocessCounter = 0;
     $.demo.debug = true;
 });
 
@@ -25,20 +26,22 @@ function initialLoad() {
 
 function insertCallSession(callSession) {
     row = toSubmittedRow(callSession)
-    if ($.demo.counter > 0) {
-        $('#callSessionsTable tr:first').after(row);
-    } else {
-        $('#callSessionsTable tr:last').after(row);
-    }
+    $('#callSessionsTable').prepend(row)
+    // if ($.demo.counter > 0) {
+    //     $('#callSessionsTable tr:first').after(row);
+    // } else {
+    //     $('#callSessionsTable tr:last').after(row);
+    // }
 }
 
 function getCallSessions() {
     var callSessions = jsRoutes.controllers.CallSessionEndpoint.getLastCallSessions($.demo.counter);
 
     $.getJSON(callSessions.url, function(data) {
-        $.each(data, function(index, callSessions) {
-            if (callSessions.counter > $.demo.counter) {
-                insertCallSession(callSessions)
+        $.each(data, function(index, callSession) {
+            if (callSession.counter > $.demo.counter) {
+                insertCallSession(callSession)
+                removeInprocessRow(callSession)
                 $.demo.counter += 1;
             }
             $('#submittedCount').text($.demo.counter)
@@ -46,6 +49,20 @@ function getCallSessions() {
     })
 
     setTimeout(function() {getCallSessions();}, $.demo.refreshRate);
+}
+
+function removeInprocessRow(callSession) {
+    console.log("removing " + callSession)
+    $('#inprocessCallsTable > tbody  > tr').each(function() {
+        tr_row = $(this);
+        var speechTd = tr_row.find("#inprocess_speech");
+        var speech = speechTd.html();
+        if (callSession.text === speech) {
+            tr_row.remove()
+        }
+    });
+
+
 }
 
 function toSubmittedRow(callSession) {
