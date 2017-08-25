@@ -14,9 +14,6 @@ import com.gigaspaces.query.QueryResultType
 
 object CallSessionEndpoint extends Controller {
 
-  val STREAMED = "1"
-  val SUBMITTED = "0"
-
   implicit val orderStatusWrites = new Writes[CallSession] {
     override def writes(f: CallSession): JsValue = JsString(f.getClass.getSimpleName)
   }

@@ -5,8 +5,13 @@ package controllers
 import java.util.Properties
 import java.util.concurrent.atomic.AtomicInteger
 
+import com.gigaspaces.document.DocumentProperties
+import com.gigaspaces.metadata.{SpaceTypeDescriptor, SpaceTypeDescriptorBuilder}
+import com.j_spaces.core.LeaseContext
 import kafka.producer.{KeyedMessage, Producer, ProducerConfig}
 import model.web.Speech
+import org.openspaces.core.GigaSpaceConfigurer
+import org.openspaces.core.space.SpaceProxyConfigurer
 import play.api.libs.json._
 import play.api.mvc._
 
@@ -16,12 +21,36 @@ object KafkaEndpoint extends Controller {
 
   implicit val speechReader = Json.reads[Speech]
 
+  val grid = {
+    val spaceConfigurer = new SpaceProxyConfigurer("insightedge-space").lookupGroups("insightedge").lookupLocators("127.0.0.1:4174")
+    new GigaSpaceConfigurer(spaceConfigurer).create()
+  }
+  private val inProcessCall = "InProcessCall2"
+  val typeDescriptor = new SpaceTypeDescriptorBuilder(inProcessCall)
+    .idProperty("Id", true)
+    .routingProperty("Speech")
+    .create()
+  grid.getTypeManager.registerTypeDescriptor(typeDescriptor)
+
+
   def submitSpeech = Action(parse.json) { request =>
     parseJson(request) { speech: Speech =>
       val rowId = counter.incrementAndGet()
-      send(speech.toString(), "texts")
+      val id = writeToSpace(speech.speech)
+      println(s"Sending $id + $speech" )
+      send(id, speech.toString, "texts")
       Created(rowId.toString)
     }
+  }
+
+  def writeToSpace(speech: String): String = {
+    val properties = new DocumentProperties()
+      .setProperty("Speech", speech)
+
+    import com.gigaspaces.document.SpaceDocument
+    val document = new SpaceDocument(inProcessCall, properties)
+    val doc: LeaseContext[SpaceDocument] = grid.write(document)
+    doc.getUID
   }
 
   private def parseJson[R](request: Request[JsValue])(block: R => Result)(implicit reads: Reads[R]): Result = {
@@ -43,6 +72,6 @@ object KafkaEndpoint extends Controller {
   }
   lazy val producer = new Producer[String, String](new ProducerConfig(kafkaConfig))
 
-  private def send(message: String, topic: String) = producer.send(new KeyedMessage[String, String](topic, message))
+  private def send(id: String, message: String, topic: String) = producer.send(new KeyedMessage[String, String](topic, id, message))
 
 }

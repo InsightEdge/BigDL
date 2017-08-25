@@ -6,6 +6,7 @@ import java.io.File
 import java.util
 
 import _root_.kafka.serializer.StringDecoder
+import com.gigaspaces.document.SpaceDocument
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.example.utils.SimpleTokenizer._
@@ -30,9 +31,9 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable.{ArrayBuffer, Map => MMap}
 import scala.io.Source
 import scala.language.existentials
-
 import com.intel.analytics.bigdl.visualization.ValidationSummary
 import com.intel.analytics.bigdl.visualization.TrainSummary
+import org.insightedge.spark.utils.GridProxyFactory
 
 
 /**
@@ -99,12 +100,11 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
       batchSize = param.batchSize
     )
 
-    val logdir = "" +
-      ""
-    val trainSummary = TrainSummary(logdir, "Text classification")
-    val validationSummary = ValidationSummary(logdir, "Text classification")
-    optimizer.setTrainSummary(trainSummary)
-    optimizer.setValidationSummary(validationSummary)
+//    val logdir = "/tmp/text_classifier/log"
+//    val trainSummary = TrainSummary(logdir, "/tmp/text_classifier/")
+//    val validationSummary = ValidationSummary(logdir, "/tmp/text_classifier/")
+//    optimizer.setTrainSummary(trainSummary)
+//    optimizer.setValidationSummary(validationSummary)
 
     val trainedModel: Module[Float] = optimizer
       .setOptimMethod(new Adagrad(learningRate = 0.01, learningRateDecay = 0.0002))
@@ -125,6 +125,8 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
       .setAppName("Text classification")
       .set("spark.task.maxFailures", "1").setInsightEdgeConfig(gsConfig)
     val sc = SparkContext.getOrCreate(conf)
+
+    val broadcasterIeConf = sc.broadcast(gsConfig)
 
     val categories = sc.broadcast(sc.gridRdd[Category]().collect())
     log.info(s"${categories.value.length} were loaded")
@@ -161,6 +163,7 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
         println("-------------------------")
 
         val textRdd: RDD[String] = rdd.map(_._2)
+        val idRdd: RDD[String] = rdd.map(_._1)
         val word2Meta = buildWord2Meta(textRdd)
         val word2Vec = buildWord2Vec(word2Meta, embeddings.value)
         val word2MetaBC: Broadcast[Map[String, WordMeta]] = sc.broadcast(word2Meta)
@@ -184,6 +187,16 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
           Prediction(null, text, category.name, prediction, 0)
         }
         predictions.saveToGrid()
+
+        if (!idRdd.isEmpty()) {
+          val space = GridProxyFactory.getOrCreateClustered(broadcasterIeConf.value)
+          val query = new SQLQuery[SpaceDocument]("InProcessCall2", "Id IN (?)")
+          val ids = idRdd.collect().toList
+          log.info(s"Deleting next inprocess calls: " + ids.mkString(","))
+          query.setParameter(1, ids.asJava)
+          space.take(query)
+        }
+
         log.info(s"Saved predictions to the grid")
         println("-------------------------")
       }

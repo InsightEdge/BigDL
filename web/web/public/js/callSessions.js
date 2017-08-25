@@ -59,8 +59,6 @@ function removeInprocessRow(callSession) {
             $('#inprocessCallsCount').text($.demo.inprocessCounter)
         }
     });
-
-
 }
 
 function toSubmittedRow(callSession) {
