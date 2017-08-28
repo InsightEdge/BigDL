@@ -1,7 +1,7 @@
 $(function () {
     $.demo = {};
     $.demo.refreshRate = 2000;
-    $.demo.inProcessCallsRefreshRate = 500;
+    $.demo.inProcessCallsRefreshRate = 1000;
     $.demo.counter = 0;
     $.demo.inprocessCounter = 0;
     $.demo.debug = true;
@@ -48,10 +48,9 @@ function getCallSessions() {
 }
 
 function getInprocessCalls() {
-    // var inprocessCalls = jsRoutes.controllers.CallSessionEndpoint.getInprocessCalls();
+    var inprocessCalls = jsRoutes.controllers.CallSessionEndpoint.getInprocessCalls();
 
-    // $.getJSON(inprocessCalls.url, function(data) {
-    $.getJSON("/inProcessCalls", function(data) {
+    $.getJSON(inprocessCalls.url, function(data) {
         removeInprocessCalls()
         $.demo.inprocessCounter = 0
         $('#inprocessCallsCount').text($.demo.inprocessCounter)
@@ -78,11 +77,26 @@ function removeInprocessRow(callSession) {
     });
 }
 
+function insertInprocessCall(id, speech) {
+    row = toInprocessRow(speech, id)
+    $('#inprocessCallsTable').prepend(row);
+    $.demo.inprocessCounter += 1
+    $('#inprocessCallsCount').text($.demo.inprocessCounter)
+}
+
+function toInprocessRow(speech, counter) {
+    var row = [];
+    row.push('<tr id="inprocess_' + counter + '">');
+    row.push('<td>'); row.push(counter); row.push('</td>');
+    row.push('<td id="inprocess_speech">'); row.push(speech);  row.push('</td>');
+    row.push('</tr>')
+    var combinedRow = row.join("");
+    return combinedRow;
+}
+
+
 function removeInprocessCalls() {
-    $('#inprocessCallsTable > tbody  > tr').each(function() {
-        tr_row = $(this);
-        tr_row.remove()
-    });
+    $('#inprocessCallsTable > tbody  > tr').remove()
 }
 
 function toSubmittedRow(callSession) {

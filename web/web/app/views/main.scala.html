@@ -12,7 +12,8 @@
         <link rel="stylesheet" type="text/css" href="@routes.Assets.at("css/main.css")" />
         <link rel="stylesheet" type="text/css" href="@routes.Assets.at("css/modal.css")" />
             @helper.javascriptRouter("jsRoutes")(
-                routes.javascript.CallSessionEndpoint.getLastCallSessions
+                routes.javascript.CallSessionEndpoint.getLastCallSessions,
+                routes.javascript.CallSessionEndpoint.getInprocessCalls
         )
         <script type="text/javascript" src="@routes.Assets.at("js/callSessions.js")"></script>
     </head>
