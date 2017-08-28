@@ -1,6 +1,7 @@
 $(function () {
     $.demo = {};
     $.demo.refreshRate = 2000;
+    $.demo.inProcessCallsRefreshRate = 500;
     $.demo.counter = 0;
     $.demo.inprocessCounter = 0;
     $.demo.debug = true;
@@ -37,7 +38,6 @@ function getCallSessions() {
         $.each(data, function(index, callSession) {
             if (callSession.counter > $.demo.counter) {
                 insertCallSession(callSession)
-                removeInprocessRow(callSession)
                 $.demo.counter += 1;
             }
             $('#submittedCount').text($.demo.counter)
@@ -46,6 +46,23 @@ function getCallSessions() {
 
     setTimeout(function() {getCallSessions();}, $.demo.refreshRate);
 }
+
+function getInprocessCalls() {
+    // var inprocessCalls = jsRoutes.controllers.CallSessionEndpoint.getInprocessCalls();
+
+    // $.getJSON(inprocessCalls.url, function(data) {
+    $.getJSON("/inProcessCalls", function(data) {
+        removeInprocessCalls()
+        $.demo.inprocessCounter = 0
+        $('#inprocessCallsCount').text($.demo.inprocessCounter)
+        $.each(data, function(index, inprocessCall) {
+            insertInprocessCall(inprocessCall.id, inprocessCall.speech)
+        });
+    })
+
+    setTimeout(function() {getInprocessCalls();}, $.demo.inProcessCallsRefreshRate);
+}
+
 
 function removeInprocessRow(callSession) {
     console.log("removing " + callSession)
@@ -58,6 +75,13 @@ function removeInprocessRow(callSession) {
             $.demo.inprocessCounter -= 1
             $('#inprocessCallsCount').text($.demo.inprocessCounter)
         }
+    });
+}
+
+function removeInprocessCalls() {
+    $('#inprocessCallsTable > tbody  > tr').each(function() {
+        tr_row = $(this);
+        tr_row.remove()
     });
 }
 
@@ -81,3 +105,4 @@ function log(msg) {
 
 $(document).ready(initialLoad);
 $(document).ready(getCallSessions);
+$(document).ready(getInprocessCalls);

@@ -76,9 +76,6 @@
                 <span id="interim_span" class="interim"></span>
 
             </div>
-            <div id="alertSent" class="alert alert-success center" role="alert" style="width: 180px;">
-                <strong>Text was sent</strong>
-            </div>
 
             <h2 class="sub-header"> In-process calls <small id="inprocessCallsCount"></small></h2>
             <div class="table-responsive scrolled-table" style="height: 150px;">
@@ -114,21 +111,16 @@
         </div>
 
         <div id="modalHelpWindow" class="modal center">
-
-                <!-- Modal content -->
             <div class="modal-content">
                 <span class="closeModalHelp">&times;</span>
                 <p>Some text in the Modal..</p>
             </div>
-
         </div>
 
 
     </div>
 
     <script>
-
-            $("#alertSent").hide();
 
             var modal = document.getElementById('modalHelpWindow');
 
@@ -155,7 +147,6 @@
                 }
             }
 
-
             showInfo('info_start');
 
             var final_transcript = '';
@@ -169,6 +160,7 @@
                 var recognition = new webkitSpeechRecognition();
                 recognition.continuous = true;
                 recognition.interimResults = true;
+                recognition.lang = "en-US";
 
                 recognition.onstart = function() {
                     recognizing = true;
@@ -206,9 +198,6 @@
                     start_img.src = '@routes.Assets.at("img/mic.gif")';
                     if (!final_transcript) {
                         showInfo('info_start')
-//                        setTimeout(function(){ showInfo('info_start'); }, 3000);
-//                        setTimeout(function(){ alert("Hello"); }, 3000);
-//                        $('#info_start').fadeIn().show();
                         return;
                     }
                     showInfo('');
@@ -245,9 +234,6 @@
                            contentType: "application/json",
                            success: function(newId) {
                                console.log("OK, counter: " + newId)
-//                               $("#alertSent").show();
-//                               $("#alertSent").delay(3000).fadeOut()
-//                               $("#info_sent_to_kafka").show()
                            }
                        });
                 console.log("Speech was sent: " + speechToSend);
@@ -275,6 +261,7 @@
                     return;
                 }
                 final_transcript = '';
+                recognition.lang = "en-US";
                 recognition.start();
                 ignore_onend = false;
                 final_span.innerHTML = '';
@@ -297,9 +284,8 @@
                 }
             }
 
-            function insertInprocessCall(speech) {
-                row = toInprocessRow(speech, $.demo.inprocessCounter)
-                console.log(row)
+            function insertInprocessCall(id, speech) {
+                row = toInprocessRow(speech, id)
                 $('#inprocessCallsTable').prepend(row);
                 $.demo.inprocessCounter += 1
                 $('#inprocessCallsCount').text($.demo.inprocessCounter)

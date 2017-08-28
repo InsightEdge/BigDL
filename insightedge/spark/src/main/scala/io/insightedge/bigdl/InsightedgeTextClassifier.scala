@@ -141,7 +141,7 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
     log.info(s"Model was loaded from $modelFile and broadcasted")
 
     val (brokers, topics) = "localhost:9092" -> "texts"
-    val ssc = new StreamingContext(sc, Seconds(2))
+    val ssc = new StreamingContext(sc, Seconds(5))
     val topicsSet = topics.split(",").toSet
     val kafkaParams: Map[String, String] = Map[String, String]("metadata.broker.list" -> brokers)
 
@@ -189,12 +189,13 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
         predictions.saveToGrid()
 
         if (!idRdd.isEmpty()) {
+          log.info("Ids count: " + idRdd.count())
           val space = GridProxyFactory.getOrCreateClustered(broadcasterIeConf.value)
-          val query = new SQLQuery[SpaceDocument]("InProcessCall2", "Id IN (?)")
+          val query = new SQLQuery[SpaceDocument]("io.insightedge.bigdl.model.InProcessCall", "Id IN (?)")
           val ids = idRdd.collect().toList
           log.info(s"Deleting next inprocess calls: " + ids.mkString(","))
           query.setParameter(1, ids.asJava)
-          space.take(query)
+          space.takeMultiple(query)
         }
 
         log.info(s"Saved predictions to the grid")

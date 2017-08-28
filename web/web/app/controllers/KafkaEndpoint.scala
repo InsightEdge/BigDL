@@ -25,7 +25,7 @@ object KafkaEndpoint extends Controller {
     val spaceConfigurer = new SpaceProxyConfigurer("insightedge-space").lookupGroups("insightedge").lookupLocators("127.0.0.1:4174")
     new GigaSpaceConfigurer(spaceConfigurer).create()
   }
-  private val inProcessCall = "InProcessCall2"
+  val inProcessCall = "io.insightedge.bigdl.model.InProcessCall"
   val typeDescriptor = new SpaceTypeDescriptorBuilder(inProcessCall)
     .idProperty("Id", true)
     .routingProperty("Speech")

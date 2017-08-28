@@ -15,6 +15,11 @@ object grid {
                      counter: Long
                    )
 
+  case class InProcessCall(
+                          id: String,
+                          speech: String
+                          )
+
 }
 
 object web {

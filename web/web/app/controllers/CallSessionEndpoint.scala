@@ -4,7 +4,7 @@ package controllers
 
 import com.gigaspaces.document.SpaceDocument
 import com.j_spaces.core.client.SQLQuery
-import model.grid.CallSession
+import model.grid.{CallSession, InProcessCall}
 import org.openspaces.core.GigaSpaceConfigurer
 import org.openspaces.core.space.SpaceProxyConfigurer
 import play.api.libs.json._
@@ -20,6 +20,9 @@ object CallSessionEndpoint extends Controller {
 
   val callSessionWriter = Json.writes[CallSession]
   val callSessionListWriter = Writes.list[CallSession](callSessionWriter)
+
+  val inProcessCallWriter = Json.writes[InProcessCall]
+  val inProcessCallListWriter = Writes.list[InProcessCall](inProcessCallWriter)
 
   val grid = {
     val spaceConfigurer = new SpaceProxyConfigurer("insightedge-space").lookupGroups("insightedge").lookupLocators("127.0.0.1:4174")
@@ -40,6 +43,20 @@ object CallSessionEndpoint extends Controller {
       sd.getProperty[String]("agentId"),
       sd.getProperty[String]("text"),
       sd.getProperty[Long]("counter")
+    )
+  }
+
+  def getInprocessCalls() = Action { implicit request =>
+    import com.gigaspaces.document.SpaceDocument
+    val query = new SQLQuery[SpaceDocument](KafkaEndpoint.inProcessCall, "ORDER BY Id ASC", QueryResultType.DOCUMENT)
+    val calls: Array[SpaceDocument] = grid.readMultiple(query)
+    Ok(Json.toJson(calls.map(toInpocessCall).toList)(inProcessCallListWriter))
+  }
+
+  def toInpocessCall(sd: SpaceDocument): InProcessCall = {
+    InProcessCall(
+      sd.getProperty[String]("Id"),
+      sd.getProperty[String]("Speech")
     )
   }
 
