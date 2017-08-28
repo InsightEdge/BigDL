@@ -33,13 +33,13 @@
                     <img id="call-center_img" src="@routes.Assets.at("img/call-center.png")">
                 </div>
                 <ul class="nav nav-sidebar">
-                    <li><a href="#">See the brain behind it!</a>
+                    <li><a href="@routes.LinksController.tensorFlow()" target="_blank">See the brain behind it!</a>
                 </ul>
                 <ul class="nav nav-sidebar">
-                    <li><a href="http://localhost:8099" target="_blank">Insightedge Web-UI</a>
+                    <li><a href="@routes.LinksController.ieWebUi()" target="_blank">Insightedge Web-UI</a>
                 </ul>
                 <ul class="nav nav-sidebar">
-                    <li><a href="http://localhost:4040/jobs/" target="_blank">Spark Jobs</a>
+                    <li><a href="@routes.LinksController.sparkJobs()" target="_blank">Spark Jobs</a>
                 </ul>
                 <div style="position: absolute;bottom: 0;" class="center">
                     <img id="call-center_img" src="@routes.Assets.at("img/insightedge-logo.png")">
