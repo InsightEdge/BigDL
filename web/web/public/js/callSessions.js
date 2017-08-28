@@ -1,6 +1,6 @@
 $(function () {
     $.demo = {};
-    $.demo.refreshRate = 2000;
+    $.demo.refreshRate = 1000;
     $.demo.inProcessCallsRefreshRate = 1000;
     $.demo.counter = 0;
     $.demo.inprocessCounter = 0;
