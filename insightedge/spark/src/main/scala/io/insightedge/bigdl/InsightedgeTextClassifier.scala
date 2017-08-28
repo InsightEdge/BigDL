@@ -100,11 +100,11 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
       batchSize = param.batchSize
     )
 
-//    val logdir = "/tmp/text_classifier/log"
-//    val trainSummary = TrainSummary(logdir, "/tmp/text_classifier/")
-//    val validationSummary = ValidationSummary(logdir, "/tmp/text_classifier/")
-//    optimizer.setTrainSummary(trainSummary)
-//    optimizer.setValidationSummary(validationSummary)
+    val logdir = "/tmp/text_classifier"
+    val trainSummary = TrainSummary(logdir, "Text classification")
+    val validationSummary = ValidationSummary(logdir, "Text classification")
+    optimizer.setTrainSummary(trainSummary)
+    optimizer.setValidationSummary(validationSummary)
 
     val trainedModel: Module[Float] = optimizer
       .setOptimMethod(new Adagrad(learningRate = 0.01, learningRateDecay = 0.0002))
