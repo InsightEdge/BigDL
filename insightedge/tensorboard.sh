@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-tensorboard --logdir /tmp/text_classifier
+nohup tensorboard --logdir /tmp/text_classifier > tensorboard.out 2>&1 &
