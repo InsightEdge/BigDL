@@ -121,9 +121,9 @@
             var host = document.location.hostname
             var protocol = document.location.protocol
 
-            document.getElementById("sparkJobsLink").href = protocol + "//" + host + ":4040";
-            document.getElementById("ieWebUILink").href = protocol + "//" + host + ":8099";
-            document.getElementById("tensorBoardLink").href = protocol + "//" + host + ":6006";
+            document.getElementById("sparkJobsLink").href = "http://" + host + ":4040";
+            document.getElementById("ieWebUILink").href = "http://" + host + ":8099";
+            document.getElementById("tensorBoardLink").href = "http://" + host + ":6006";
 
             var modal = document.getElementById('modalHelpWindow');
 
