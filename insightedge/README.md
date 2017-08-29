@@ -21,7 +21,7 @@ Steps:
 * Deploy processor-0.2.0-jar-with-dependencies.jar in GS UI.
 * In separate terminal tab start Spark streaming for predictions: ```sh runTextPredictionJob.sh```.
 * Open GS UI and verify that predictions are saved in io.insightedge.bigdl.model.Prediction object.
-* Start web server to track CallSessions objects: ```cd web && sbt web/run```. Go to localhost:9000
+* Start web server to track CallSessions objects: ```cd web and sh runWeb.sh```. Go to localhost:9000
 
 Shutting down:
 * Stop kafka: ```sh kafka-stop.sh```
