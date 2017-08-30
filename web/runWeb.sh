@@ -1,0 +1,1 @@
+sbt -Dhttps.port=9443 -Dplay.server.https.keyStore.path=/home/experian/bigdl-fork/BigDL/web/web/conf/keystore.jks -Dplay.server.https.keyStore.password=changeit -Dplay.server.https.keyStore.algorithm=RSA web/run
