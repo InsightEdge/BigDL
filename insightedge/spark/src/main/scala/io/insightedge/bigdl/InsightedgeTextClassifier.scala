@@ -16,7 +16,7 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
 import com.j_spaces.core.client.SQLQuery
-import io.insightedge.bigdl.model.{Category, Prediction, TrainingText}
+import io.insightedge.bigdl.model.{Category, Prediction, TrainingText, WordMetainfo}
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
@@ -74,7 +74,12 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
     // For large dataset, you might want to get such RDD[(String, Float)] from HDFS
     // String - text, Float - index of category
     val textToLabelRdd: RDD[(String, Float)] = sc.parallelize(textToLabelFloat, param.partitionNum)
-    val (word2Meta, word2Vec) = analyzeTexts(textToLabelRdd, gloveEmbeddingsFile)
+    val (word2Meta: Map[String, WordMeta], word2Vec) = analyzeTexts(textToLabelRdd, gloveEmbeddingsFile)
+
+    overwriteWordMetainfo(sc, word2Meta.map { case (word, meta) =>
+      WordMetainfo(null, word, meta.count, meta.index)
+    }.toSeq)
+
     val word2MetaBC: Broadcast[Map[String, WordMeta]] = sc.broadcast(word2Meta)
     val word2VecBC: Broadcast[Map[Float, Array[Float]]] = sc.broadcast(word2Vec)
 
@@ -158,15 +163,18 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
     val embeddings = sc.broadcast(file.getLines().toList)
     file.close
 
+    val metainfo = sc.gridRdd[WordMetainfo]()
+    val word2MetaBC = sc.broadcast(metainfo.map(i => i.word -> WordMeta(i.count, i.wordIndex)).collect().toMap)
+
     messages.foreachRDD((rdd: RDD[(String, String)]) =>
       if (!rdd.isEmpty) {
         println("-------------------------")
 
         val textRdd: RDD[String] = rdd.map(_._2)
         val idRdd: RDD[String] = rdd.map(_._1)
-        val word2Meta = buildWord2Meta(textRdd)
-        val word2Vec = buildWord2Vec(word2Meta, embeddings.value)
-        val word2MetaBC: Broadcast[Map[String, WordMeta]] = sc.broadcast(word2Meta)
+
+        //val word2Meta = buildWord2Meta(textRdd)
+        val word2Vec = buildWord2Vec(word2MetaBC.value, embeddings.value)
         val word2VecBC: Broadcast[Map[Float, Array[Float]]] = sc.broadcast(word2Vec)
         val tokensToLabel: RDD[Array[Float]] = textRdd.map { text => toTokens(text, word2MetaBC.value) }
 
@@ -214,6 +222,14 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
     val categories = categoriesMapping.map { case (name, label) => Category(null, name, label) }
     sc.parallelize(categories.toList).saveToGrid()
     log.info(s"Saved ${categories.size} categories to the grid")
+  }
+
+  def overwriteWordMetainfo(sc: SparkContext, wordMetainfos: Seq[WordMetainfo]): Unit = {
+    val query = new SQLQuery[WordMetainfo](classOf[WordMetainfo], "wordIndex >= 0")
+    sc.grid.clear(query)
+
+    sc.parallelize(wordMetainfos).saveToGrid()
+    log.info(s"Saved ${wordMetainfos.size} word metainfo to the grid")
   }
 
   def overwriteTrainingText(sc: SparkContext, textToLabel: Seq[(String, Int)]): Unit = {
