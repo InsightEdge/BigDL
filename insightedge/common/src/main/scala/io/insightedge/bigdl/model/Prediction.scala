@@ -11,22 +11,24 @@ import scala.beans.BeanProperty
   * @author Danylo_Hurin.
   */
 case class Prediction(
-                 @BeanProperty
-                 @SpaceId(autoGenerate = true)
-                 var id: String,
+                       @BeanProperty
+                       @SpaceId(autoGenerate = true)
+                       var id: String,
 
-                 @BeanProperty
-//                 @SpaceTextIndex
-                 var text: String,
+                       @BeanProperty
+                       var text: String,
 
-                 @BeanProperty
-                 var category: String,
+                       @BeanProperty
+                       var category: String,
 
-                 @BeanProperty
-                 var label: Int,
+                       @BeanProperty
+                       var label: Int,
 
-                 @BeanProperty
-                 var flag: Int) {
-  def this() = this(null, null, null, -1, -1)
+                       @BeanProperty
+                       var timeInMilliseconds: Long,
+
+                       @BeanProperty
+                       var flag: Int) {
+  def this() = this(null, null, null, -1, -1l, -1)
 
 }

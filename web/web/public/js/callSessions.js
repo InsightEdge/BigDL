@@ -23,6 +23,15 @@ function initialLoad() {
         });
     })
 
+    var stats = jsRoutes.controllers.CallSessionEndpoint.getModelStatistic();
+
+    console.log("Stats")
+    $.getJSON(stats.url, function(data) {
+        console.log(data)
+        $('#trainingTime').text(data.time)
+        $('#accuracy').text(data.accuracy)
+    })
+
     log("Initial load complete")
 }
 
@@ -105,6 +114,7 @@ function toSubmittedRow(callSession) {
     row.push('<td>'); row.push(callSession.id);       row.push('</td>');
     row.push('<td>'); row.push(callSession.category);  row.push('</td>');
     row.push('<td>'); row.push(callSession.agentId);     row.push('<pre id="agentIdPre">       </pre></td>');
+    row.push('<td>'); row.push(callSession.time);      row.push('</td>');
     row.push('<td>'); row.push(callSession.text);      row.push('</td>');
     row.push('</tr>')
     var combinedRow = row.join("");

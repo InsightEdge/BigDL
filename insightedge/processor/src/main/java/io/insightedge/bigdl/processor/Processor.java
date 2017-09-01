@@ -65,7 +65,7 @@ public class Processor {
     public Prediction execute(Prediction prediction) {
         //process Data here
         String agentId = (int)(Math.random() * 10) + "";
-        CallSession callSession = new CallSession(counter + "", prediction.text(), prediction.category(), agentId, counter);
+        CallSession callSession = new CallSession(counter + "", prediction.text(), prediction.category(), agentId, prediction.timeInMilliseconds(), counter);
         prediction.setFlag(1);
         gigaMySpace.write(callSession);
         counter++;

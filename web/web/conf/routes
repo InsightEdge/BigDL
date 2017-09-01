@@ -8,6 +8,7 @@ GET         /                                     controllers.WebEndpoint.index
 #TODO params
 GET         /callSession/:streamedRowId           controllers.CallSessionEndpoint.getLastCallSessions(streamedRowId: String)
 GET         /inProcessCalls                       controllers.CallSessionEndpoint.getInprocessCalls()
+GET         /modelStats                           controllers.CallSessionEndpoint.getModelStatistic()
 
 POST        /speech                               controllers.KafkaEndpoint.submitSpeech
 

@@ -16,7 +16,6 @@ case class CallSession(
                  var id: String,
 
                  @BeanProperty
-//                 @SpaceTextIndex
                  var text: String,
 
                  @BeanProperty
@@ -26,9 +25,12 @@ case class CallSession(
                  var agentId: String,
 
                  @BeanProperty
+                 var timeInMilliseconds: Long,
+
+                 @BeanProperty
                  var counter: Long
 ) {
-  def this() = this(null, null, null, null, -1)
+  def this() = this(null, null, null, null, -1l, -1)
 
 }
 

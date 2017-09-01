@@ -16,7 +16,6 @@ case class TrainingText(
                  var id: String,
 
                  @BeanProperty
-//                 @SpaceTextIndex
                  var text: String,
 
                  @BeanProperty

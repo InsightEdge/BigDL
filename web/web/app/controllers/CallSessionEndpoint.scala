@@ -2,9 +2,11 @@
 
 package controllers
 
+import java.util.concurrent.TimeUnit
+
 import com.gigaspaces.document.SpaceDocument
 import com.j_spaces.core.client.SQLQuery
-import model.grid.{CallSession, InProcessCall}
+import model.grid.{CallSession, InProcessCall, ModelStats}
 import org.openspaces.core.GigaSpaceConfigurer
 import org.openspaces.core.space.SpaceProxyConfigurer
 import play.api.libs.json._
@@ -24,6 +26,8 @@ object CallSessionEndpoint extends Controller {
   val inProcessCallWriter = Json.writes[InProcessCall]
   val inProcessCallListWriter = Writes.list[InProcessCall](inProcessCallWriter)
 
+  val modelStatsWriter = Json.writes[ModelStats]
+
   val grid = {
     val spaceConfigurer = new SpaceProxyConfigurer("insightedge-space").lookupGroups("insightedge").lookupLocators("127.0.0.1:4174")
     new GigaSpaceConfigurer(spaceConfigurer).create()
@@ -41,13 +45,13 @@ object CallSessionEndpoint extends Controller {
       sd.getProperty[String]("id"),
       sd.getProperty[String]("category"),
       sd.getProperty[String]("agentId"),
+      sd.getProperty[Long]("timeInMilliseconds"),
       sd.getProperty[String]("text"),
       sd.getProperty[Long]("counter")
     )
   }
 
   def getInprocessCalls() = Action { implicit request =>
-    import com.gigaspaces.document.SpaceDocument
     val query = new SQLQuery[SpaceDocument](KafkaEndpoint.inProcessCall, "ORDER BY Id ASC", QueryResultType.DOCUMENT)
     val calls: Array[SpaceDocument] = grid.readMultiple(query)
     Ok(Json.toJson(calls.map(toInpocessCall).toList)(inProcessCallListWriter))
@@ -57,6 +61,23 @@ object CallSessionEndpoint extends Controller {
     InProcessCall(
       sd.getProperty[String]("Id"),
       sd.getProperty[String]("Speech")
+    )
+  }
+
+  def getModelStatistic() = Action { implicit request =>
+    val query = new SQLQuery[SpaceDocument]("io.insightedge.bigdl.model.TrainedModelStats", "ORDER BY id ASC", QueryResultType.DOCUMENT)
+    val calls: SpaceDocument = grid.read(query)
+    Ok(Json.toJson(toModelStats(calls))(modelStatsWriter))
+  }
+
+  def toModelStats(sd: SpaceDocument): ModelStats = {
+    val time = sd.getProperty[Long]("timeInMilliseconds")
+    val mins = TimeUnit.MILLISECONDS.toMinutes(time)
+    val seconds = TimeUnit.MILLISECONDS.toSeconds(time)
+    val accuracy = sd.getProperty[Float]("accuracy")
+    ModelStats(
+      s"$mins:$seconds",
+      accuracy.toString
     )
   }
 

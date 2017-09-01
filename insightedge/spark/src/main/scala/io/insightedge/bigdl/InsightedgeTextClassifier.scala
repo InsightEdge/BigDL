@@ -16,7 +16,7 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
 import com.j_spaces.core.client.SQLQuery
-import io.insightedge.bigdl.model.{Category, Prediction, TrainingText, WordMetainfo}
+import io.insightedge.bigdl.model._
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
@@ -111,15 +111,21 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
     optimizer.setTrainSummary(trainSummary)
     optimizer.setValidationSummary(validationSummary)
 
+    val start = System.currentTimeMillis()
     val trainedModel: Module[Float] = optimizer
       .setOptimMethod(new Adagrad(learningRate = 0.01, learningRateDecay = 0.0002))
       .setValidation(Trigger.everyEpoch, validationRDD, Array(new Top1Accuracy[Float]), param.batchSize)
       .setEndWhen(Trigger.maxEpoch(epochNum))
       .optimize()
+    val stop = System.currentTimeMillis()
 
     // TODO save to the grid as binary data: @SpaceStorageType(storageType = StorageType.BINARY)
     trainedModel.save(modelFile, overWrite = true)
     log.info(s"Model was saved to $modelFile")
+
+    val array: Array[ValidationMethod[Float]] = Array(new Top1Accuracy[Float])
+    val accuracy = trainedModel.evaluate(validationRDD, array)(0)._1.result()._1
+    overwriteModelStats(sc, stop - start, accuracy)
 
     sc.stop()
   }
@@ -150,7 +156,6 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
     val topicsSet = topics.split(",").toSet
     val kafkaParams: Map[String, String] = Map[String, String]("metadata.broker.list" -> brokers)
 
-    log.info("ready to read texts")
 
     val messages: InputDStream[(String, String)] = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
       ssc, kafkaParams, topicsSet)
@@ -165,17 +170,20 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
 
     val metainfo = sc.gridRdd[WordMetainfo]()
     val word2MetaBC = sc.broadcast(metainfo.map(i => i.word -> WordMeta(i.count, i.wordIndex)).collect().toMap)
+    val word2Vec = buildWord2Vec(word2MetaBC.value, embeddings.value)
+    val word2VecBC: Broadcast[Map[Float, Array[Float]]] = sc.broadcast(word2Vec)
+
+    log.info("Ready to classify...")
 
     messages.foreachRDD((rdd: RDD[(String, String)]) =>
       if (!rdd.isEmpty) {
-        println("-------------------------")
-
+          println("-------------------------")
+//          val textRdd: RDD[String] = sc.parallelize(Seq(idAndText._2))
+//          val idRdd: RDD[String] = sc.parallelize(Seq(idAndText._1))
         val textRdd: RDD[String] = rdd.map(_._2)
         val idRdd: RDD[String] = rdd.map(_._1)
 
-        //val word2Meta = buildWord2Meta(textRdd)
-        val word2Vec = buildWord2Vec(word2MetaBC.value, embeddings.value)
-        val word2VecBC: Broadcast[Map[Float, Array[Float]]] = sc.broadcast(word2Vec)
+        val start = System.currentTimeMillis()
         val tokensToLabel: RDD[Array[Float]] = textRdd.map { text => toTokens(text, word2MetaBC.value) }
 
         val shapedTokensToLabel: RDD[Array[Float]] = tokensToLabel.map { tokens => shaping(tokens, sequenceLen) }
@@ -190,14 +198,18 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
 
         val results: RDD[Int] = trainedModel.value.predictClass(sampleRDD)
 
+        val stop = System.currentTimeMillis()
+        val totalTime = stop - start
+        log.info(s"Total classification time: $totalTime")
+        val count = idRdd.count()
         val predictions = textRdd.zip(results).map { case (text, prediction) =>
           val category = categories.value.filter(_.label == prediction)(0)
-          Prediction(null, text, category.name, prediction, 0)
+          Prediction(null, text, category.name, prediction, totalTime / count, 0)
         }
         predictions.saveToGrid()
 
         if (!idRdd.isEmpty()) {
-          log.info("Ids count: " + idRdd.count())
+          log.info("Ids count: " + count)
           val space = GridProxyFactory.getOrCreateClustered(broadcasterIeConf.value)
           val query = new SQLQuery[SpaceDocument]("io.insightedge.bigdl.model.InProcessCall", "Id IN (?)")
           val ids = idRdd.collect().toList
@@ -239,6 +251,15 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
     val texts = textToLabel.map{ case (text, label) => TrainingText(null, text, label) }
     sc.parallelize(texts).saveToGrid()
     log.info(s"Saved ${texts.length} texts to the grid")
+  }
+
+  def overwriteModelStats(sc: SparkContext, time: Long, accuracy: Float): Unit = {
+    val query = new SQLQuery[TrainedModelStats](classOf[TrainedModelStats], "timeInMilliseconds >= 0")
+    sc.grid.clear(query)
+
+    val stats = TrainedModelStats(null, time, accuracy)
+    sc.grid.write(stats)
+    log.info(s"Saved trained model statistics: $stats")
   }
 
   /**
@@ -378,18 +399,18 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
     model
   }
 
-  def overwritePredictions(sc: SparkContext, rawPredictions: RDD[(String, Int)], categoriesRdd: RDD[Category]): Unit = {
-    val query = new SQLQuery[Prediction](classOf[Prediction], "label > 0")
-    sc.grid.clear(query)
-
-    val categories = categoriesRdd.collect()
-    val predictions = rawPredictions.map { case (text, label) =>
-      val category = categories.filter(_.label == label)(0)
-      Prediction(null, text, category.name, label, 0)
-    }
-    predictions.saveToGrid()
-    log.info(s"Saved predictions to the grid")
-  }
+//  def overwritePredictions(sc: SparkContext, rawPredictions: RDD[(String, Int)], categoriesRdd: RDD[Category]): Unit = {
+//    val query = new SQLQuery[Prediction](classOf[Prediction], "label > 0")
+//    sc.grid.clear(query)
+//
+//    val categories = categoriesRdd.collect()
+//    val predictions = rawPredictions.map { case (text, label) =>
+//      val category = categories.filter(_.label == label)(0)
+//      Prediction(null, text, category.name, label, 0)
+//    }
+//    predictions.saveToGrid()
+//    log.info(s"Saved predictions to the grid")
+//  }
 
 }
 
