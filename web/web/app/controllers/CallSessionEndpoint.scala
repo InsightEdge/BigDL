@@ -76,7 +76,7 @@ object CallSessionEndpoint extends Controller {
     val seconds = TimeUnit.MILLISECONDS.toSeconds(time)
     val accuracy = sd.getProperty[Float]("accuracy")
     ModelStats(
-      s"$mins:$seconds",
+      s"$mins min",
       accuracy.toString
     )
   }
