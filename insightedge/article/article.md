@@ -44,7 +44,6 @@ Running demo is divided in three parts:
 
 3. Run Spark streaming job with trained BigDL classification model
     * In separate terminal tab start Spark streaming for predictions: ```sh runTextPredictionJob.sh```.
-    * Open GS UI and verify that predictions are saved in io.insightedge.bigdl.model.Prediction object.
     * Start web server: ```cd web and sh runWeb.sh```.
 
 Now go to [https://localhost:9443](https://localhost:9443):
