@@ -2,7 +2,7 @@ In this demo/blog post we will show you how to combine real-time speech recognit
 
 ## Motivation
 As for example let's consider big companies with huge client base requires to organize call centers. In order to service client correctly it's vital to which specialist he should be directed. Current demo takes advantage of cutting edge technologies to resolve such tasks in effective and ...(in short time like 100 of milliseconds) manner.
-Here is how it achieved in this demo:
+Here is a general workflow:
 
 ![Application flow](flow.png)
 
