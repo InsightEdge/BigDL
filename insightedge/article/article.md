@@ -47,7 +47,7 @@ Running demo is divided in three parts:
     * Open GS UI and verify that predictions are saved in io.insightedge.bigdl.model.Prediction object.
     * Start web server to track CallSessions objects: ```cd web and sh runWeb.sh```.
 
-Now open go to [https://localhost:9443](https://localhost:9443):
+Now go to [https://localhost:9443](https://localhost:9443):
 
 1. Click on a microphone button and start talking. Click microphone button one more time to stop.
 2. Shortly you will see a new record in "In-process calls" table. It means that call is currently processed.
