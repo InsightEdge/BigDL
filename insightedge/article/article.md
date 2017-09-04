@@ -47,11 +47,11 @@ Running demo is divided in three parts:
     * Open GS UI and verify that predictions are saved in io.insightedge.bigdl.model.Prediction object.
     * Start web server to track CallSessions objects: ```cd web and sh runWeb.sh```.
 
-Now open go to [https://localhost:9443](https://localhost:9443).
+Now open go to [https://localhost:9443](https://localhost:9443):
 
 1. Click on a microphone button and start talking. Click microphone button one more time to stop.
 2. Shortly you will see a new record in "In-process calls" table. It means that call is currently processed.
-3. After a while row from "In-process call" table will be moved to the "Call sessions" table. In column "Category" you can see to which category speech was classified by BigDL model. 
+3. After a while row from "In-process call" table will be moved to the "Call sessions" table. In column "Category" you can see to which category speech was classified by BigDL model. In column time you will see how much time it took to classify the speech. 
 
 ## Shutting down:
 * Stop kafka: ```sh kafka-stop.sh```
