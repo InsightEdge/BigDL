@@ -49,7 +49,7 @@ Running demo is divided in three parts:
 
 Now go to [https://localhost:9443](https://localhost:9443):
 
-1. Click on a microphone button and start talking. Click microphone button one more time to stop.
+1. Click on a microphone button and start talking. Click microphone button one more time to stop recording and send speech to Kafka.
 2. Shortly you will see a new record in "In-process calls" table. It means that call is currently processed.
 3. After a while row from "In-process call" table will be moved to the "Call sessions" table. In column "Category" you can see to which category speech was classified by BigDL model. In column time you will see how much time it took to classify the speech. 
 
