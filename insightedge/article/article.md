@@ -1,7 +1,12 @@
 In this demo/blog post we will show you how to combine real-time speech recognition with real-time speech classification based on Intel's BigDL library and Insightedge.
 
+## What is BigDL?
+BigDL is a distributed deep learning library for Apache Spark. You can lean more about deep learning and neural networks on [Coursera](https://www.coursera.org/specializations/deep-learning).
+
+With BigDL it's possible write deep learning applications as standard Spark programs thus allowing to leverage Spark during model training, prediction, and tuning. High performance and throughput is achieved with [Intel Math Kernel Library](https://software.intel.com/en-us/mkl). Read more about BigDL [here](https://github.com/intel-analytics/BigDL).  
+
 ## Motivation
-As for example let's consider big companies with huge client base requires to organize call centers. In order to service client correctly it's vital to which specialist he should be directed. Current demo takes advantage of cutting edge technologies to resolve such tasks in effective and ...(in short time like 100 of milliseconds) manner.
+As for example let's consider big companies with huge client base requires to organize call centers. In order to service client correctly it's vital to which specialist he should be directed. Current demo takes advantage of cutting edge technologies to resolve such tasks in effective manner less then in 100ms.
 Here is a general workflow:
 
 ![Application flow](flow.png)
