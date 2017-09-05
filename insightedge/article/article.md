@@ -38,6 +38,8 @@ Prerequisites:
 Running demo is divided in three parts:
 
 1. Build project and start components
+    * Clone this repo
+    * Go to insightedge directory: ```cd BigDL/insightedge```
     * Build the project: ```sh build.sh```
     * Start zookeeper and kafka server: ```sh kafka-start.sh```
     * Create Kafka topic: ```sh kafka-create-topic.sh```. To verify that topic was created run ```sh kafka-topics.sh```
@@ -49,7 +51,7 @@ Running demo is divided in three parts:
 
 3. Run Spark streaming job with trained BigDL classification model
     * In separate terminal tab start Spark streaming for predictions: ```sh runTextPredictionJob.sh```.
-    * Start web server: ```cd web and sh runWeb.sh```.
+    * Start web server: ```cd BigDL/web and sh runWeb.sh```.
 
 Now go to [https://localhost:9443](https://localhost:9443):
 
