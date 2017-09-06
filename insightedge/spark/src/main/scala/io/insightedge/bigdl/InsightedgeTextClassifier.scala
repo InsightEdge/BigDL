@@ -55,6 +55,10 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
       .setAppName("Text classification")
       .set("spark.task.maxFailures", "1").setInsightEdgeConfig(gsConfig)
     val sc = SparkContext.getOrCreate(conf)
+
+    initSpaceObjects(sc)
+    log.info("Space objects were initialized")
+
     Engine.init
     val sequenceLen = param.maxSequenceLength
     val embeddingDim = param.embeddingDim //depends on which file is chosen for training. 50d -> 50, 100d -> 100
@@ -156,7 +160,6 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
     val topicsSet = topics.split(",").toSet
     val kafkaParams: Map[String, String] = Map[String, String]("metadata.broker.list" -> brokers)
 
-
     val messages: InputDStream[(String, String)] = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
       ssc, kafkaParams, topicsSet)
 
@@ -173,13 +176,14 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
     val word2Vec = buildWord2Vec(word2MetaBC.value, embeddings.value)
     val word2VecBC: Broadcast[Map[Float, Array[Float]]] = sc.broadcast(word2Vec)
 
+    val deleted = deleteInProcessCalls(sc)
+    log.info(s"Deleted $deleted old in-process calls")
+
     log.info("Ready to classify...")
 
     messages.foreachRDD((rdd: RDD[(String, String)]) =>
       if (!rdd.isEmpty) {
-          println("-------------------------")
-//          val textRdd: RDD[String] = sc.parallelize(Seq(idAndText._2))
-//          val idRdd: RDD[String] = sc.parallelize(Seq(idAndText._1))
+        println("-------------------------")
         val textRdd: RDD[String] = rdd.map(_._2)
         val idRdd: RDD[String] = rdd.map(_._1)
 
@@ -209,9 +213,8 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
         predictions.saveToGrid()
 
         if (!idRdd.isEmpty()) {
-          log.info("Ids count: " + count)
           val space = GridProxyFactory.getOrCreateClustered(broadcasterIeConf.value)
-          val query = new SQLQuery[SpaceDocument]("io.insightedge.bigdl.model.InProcessCall", "Id IN (?)")
+          val query = new SQLQuery[InProcessCall](classOf[InProcessCall], "id IN (?)")
           val ids = idRdd.collect().toList
           log.info(s"Deleting next inprocess calls: " + ids.mkString(","))
           query.setParameter(1, ids.asJava)
@@ -225,6 +228,27 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
 
     ssc.start()
     ssc.awaitTermination()
+  }
+
+  def initSpaceObjects(sc: SparkContext): Unit = {
+    val dummyId = "dummy_id"
+    val query = new SQLQuery[CallSession](classOf[CallSession], "id = ?")
+    query.setParameter(1, dummyId)
+    sc.grid.takeIfExists(query)
+    val cs = CallSession(dummyId, "session for initialization", null, null, -1, -1)
+    sc.grid.write(cs)
+    sc.grid.clear(query)
+
+    val inProcessCall = InProcessCall(null, "call for initialization")
+    val newId = sc.grid.write(inProcessCall).getUID
+    sc.grid.clear(InProcessCall(newId, "call for initialization"))
+  }
+
+  def deleteInProcessCalls(sc: SparkContext): Int = {
+    val ids = sc.gridRdd[InProcessCall]().collect().toList.map(_.id)
+    val query = new SQLQuery[InProcessCall](classOf[InProcessCall], "id IN (?)")
+    query.setParameter(1, ids.asJava)
+    sc.grid.takeMultiple(query).length
   }
 
   def overwriteCategories(sc: SparkContext, categoriesMapping: Map[String, Int]): Unit = {
@@ -398,19 +422,6 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
     model.add(LogSoftMax())
     model
   }
-
-//  def overwritePredictions(sc: SparkContext, rawPredictions: RDD[(String, Int)], categoriesRdd: RDD[Category]): Unit = {
-//    val query = new SQLQuery[Prediction](classOf[Prediction], "label > 0")
-//    sc.grid.clear(query)
-//
-//    val categories = categoriesRdd.collect()
-//    val predictions = rawPredictions.map { case (text, label) =>
-//      val category = categories.filter(_.label == label)(0)
-//      Prediction(null, text, category.name, label, 0)
-//    }
-//    predictions.saveToGrid()
-//    log.info(s"Saved predictions to the grid")
-//  }
 
 }
 

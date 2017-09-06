@@ -10,6 +10,8 @@ val kafkaLibs = Seq(
     exclude("com.sun.jmx", "jmxri")
 )
 
+val commonLib = Seq("io.insightedge.bigdl" % "common" % "0.0.1")
+
 def insightEdgeLibs(scope: String) = Seq(
   "org.gigaspaces.insightedge" % "insightedge-core" % "1.0.0" % scope exclude("javax.jms", "jms"),
   "org.gigaspaces.insightedge" % "insightedge-scala" % "1.0.0" % scope exclude("javax.jms", "jms")
@@ -25,4 +27,5 @@ lazy val web = project
   .enablePlugins(PlayScala)
   .settings(resolvers ++= openspaceResolvers)
   .settings(libraryDependencies ++= kafkaLibs)
+  .settings(libraryDependencies ++= commonLib)
   .settings(libraryDependencies ++= insightEdgeLibs("compile"))

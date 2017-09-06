@@ -6,9 +6,9 @@
 GET         /                                     controllers.WebEndpoint.index
 
 #TODO params
-GET         /callSession/:streamedRowId           controllers.CallSessionEndpoint.getLastCallSessions(streamedRowId: String)
-GET         /inProcessCalls                       controllers.CallSessionEndpoint.getInprocessCalls()
-GET         /modelStats                           controllers.CallSessionEndpoint.getModelStatistic()
+GET         /callSession/:streamedRowId           controllers.CallsEndpoint.getLastCallSessions(streamedRowId: String)
+GET         /inProcessCalls                       controllers.CallsEndpoint.getInprocessCalls()
+GET         /modelStats                           controllers.CallsEndpoint.getModelStatistic()
 
 POST        /speech                               controllers.KafkaEndpoint.submitSpeech
 

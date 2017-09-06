@@ -13,6 +13,8 @@ import model.web.Speech
 import org.openspaces.core.GigaSpaceConfigurer
 import org.openspaces.core.space.SpaceProxyConfigurer
 import play.api.libs.json._
+import io.insightedge.bigdl.model.InProcessCall
+
 import play.api.mvc._
 
 object KafkaEndpoint extends Controller {
@@ -25,13 +27,6 @@ object KafkaEndpoint extends Controller {
     val spaceConfigurer = new SpaceProxyConfigurer("insightedge-space").lookupGroups("insightedge").lookupLocators("127.0.0.1:4174")
     new GigaSpaceConfigurer(spaceConfigurer).create()
   }
-  val inProcessCall = "io.insightedge.bigdl.model.InProcessCall"
-  val typeDescriptor = new SpaceTypeDescriptorBuilder(inProcessCall)
-    .idProperty("Id", true)
-    .routingProperty("Speech")
-    .create()
-  grid.getTypeManager.registerTypeDescriptor(typeDescriptor)
-
 
   def submitSpeech = Action(parse.json) { request =>
     parseJson(request) { speech: Speech =>
@@ -44,13 +39,8 @@ object KafkaEndpoint extends Controller {
   }
 
   def writeToSpace(speech: String): String = {
-    val properties = new DocumentProperties()
-      .setProperty("Speech", speech)
-
-    import com.gigaspaces.document.SpaceDocument
-    val document = new SpaceDocument(inProcessCall, properties)
-    val doc: LeaseContext[SpaceDocument] = grid.write(document)
-    doc.getUID
+    val call = InProcessCall(null, speech)
+    grid.write(call).getUID
   }
 
   private def parseJson[R](request: Request[JsValue])(block: R => Result)(implicit reads: Reads[R]): Result = {

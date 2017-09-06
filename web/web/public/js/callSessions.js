@@ -8,7 +8,7 @@ $(function () {
 });
 
 function initialLoad() {
-    var callSessions = jsRoutes.controllers.CallSessionEndpoint.getLastCallSessions(0);
+    var callSessions = jsRoutes.controllers.CallsEndpoint.getLastCallSessions(0);
 
     $.getJSON(callSessions.url, function(data) {
         $.each(data, function(index, callSession) {
@@ -23,7 +23,7 @@ function initialLoad() {
         });
     })
 
-    var stats = jsRoutes.controllers.CallSessionEndpoint.getModelStatistic();
+    var stats = jsRoutes.controllers.CallsEndpoint.getModelStatistic();
 
     console.log("Stats")
     $.getJSON(stats.url, function(data) {
@@ -36,12 +36,12 @@ function initialLoad() {
 }
 
 function insertCallSession(callSession) {
-    row = toSubmittedRow(callSession)
+    row = toCallSession(callSession)
     $('#callSessionsTable').prepend(row)
 }
 
 function getCallSessions() {
-    var callSessions = jsRoutes.controllers.CallSessionEndpoint.getLastCallSessions($.demo.counter);
+    var callSessions = jsRoutes.controllers.CallsEndpoint.getLastCallSessions($.demo.counter);
 
     $.getJSON(callSessions.url, function(data) {
         $.each(data, function(index, callSession) {
@@ -57,7 +57,7 @@ function getCallSessions() {
 }
 
 function getInprocessCalls() {
-    var inprocessCalls = jsRoutes.controllers.CallSessionEndpoint.getInprocessCalls();
+    var inprocessCalls = jsRoutes.controllers.CallsEndpoint.getInprocessCalls();
 
     $.getJSON(inprocessCalls.url, function(data) {
         removeInprocessCalls()
@@ -108,7 +108,7 @@ function removeInprocessCalls() {
     $('#inprocessCallsTable > tbody  > tr').remove()
 }
 
-function toSubmittedRow(callSession) {
+function toCallSession(callSession) {
     var row = [];
     row.push('<tr>')
     row.push('<td>'); row.push(callSession.id);       row.push('</td>');

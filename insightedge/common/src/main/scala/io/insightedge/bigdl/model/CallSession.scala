@@ -3,7 +3,6 @@
 package io.insightedge.bigdl.model
 
 import org.insightedge.scala.annotation.SpaceId
-//import org.openspaces.textsearch.SpaceTextIndex
 
 import scala.beans.BeanProperty
 
