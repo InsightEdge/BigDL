@@ -11,4 +11,4 @@ $INSIGHTEDGE_HOME/bin/insightedge-submit --master ${MASTER} --driver-memory 10g 
            --class io.insightedge.bigdl.InsightedgeTextClassifierTrainingJob \
            ./spark/target/spark-0.2.0-jar-with-dependencies.jar \
            --batchSize 128 --baseDir ${BASE_DIR} --partitionNum 4 \
-           --modelFile ${MODEL_FILE} --epochNum 40 --embeddingDim 200
+           --modelFile ${MODEL_FILE} --epochNum 20 --embeddingDim 100
