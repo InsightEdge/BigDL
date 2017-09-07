@@ -30,7 +30,7 @@
             <div class="col-sm-3 col-md-2 sidebar">
                 <div class="center" style="margin-top: 10px;
                     margin-bottom: 10px">
-                    <img id="call-center_img" src="@routes.Assets.at("../../../../../../../../home/dgurin/code/bigdl-fork/BigDL/web/web/public/img/call-center.png")">
+                    <img id="call-center_img" src="@routes.Assets.at("img/call-center.png")">
                 </div>
                 <ul class="nav nav-sidebar">
                     <li><a id="tensorBoardLink" href="#" target="_blank">See the brain behind it!</a></li>
@@ -44,7 +44,7 @@
                     <p>BigDL v0.2.0</p>
                 </ul>
                 <div style="position: absolute;bottom: 0;" class="center">
-                    <img id="call-center_img" src="@routes.Assets.at("../../../../../../../../home/dgurin/code/bigdl-fork/BigDL/web/web/public/img/insightedge-logo.png")">
+                    <img id="call-center_img" src="@routes.Assets.at("img/insightedge-logo.png")">
                 </div>
             </div>
         </div>
@@ -71,7 +71,7 @@
             </div>
             <div class="right">
                 <button id="start_button" onclick="startButton(event)">
-                    <img id="start_img" src="@routes.Assets.at("../../../../../../../../home/dgurin/code/bigdl-fork/BigDL/web/web/public/img/mic.gif")" alt="Start"></button>
+                    <img id="start_img" src="@routes.Assets.at("img/mic.gif")" alt="Start"></button>
             </div>
             <div id="results">
                 <span id="final_span" class="final"></span>
@@ -175,17 +175,17 @@
                 recognition.onstart = function() {
                     recognizing = true;
                     showInfo('info_speak_now');
-                    start_img.src = '@routes.Assets.at("../../../../../../../../home/dgurin/code/bigdl-fork/BigDL/web/web/public/img/mic-animate.gif")';
+                    start_img.src = '@routes.Assets.at("img/mic-animate.gif")';
                 };
 
                 recognition.onerror = function(event) {
                     if (event.error == 'no-speech') {
-                        start_img.src = '@routes.Assets.at("../../../../../../../../home/dgurin/code/bigdl-fork/BigDL/web/web/public/img/mic.gif")';
+                        start_img.src = '@routes.Assets.at("img/mic.gif")';
                         showInfo('info_no_speech');
                         ignore_onend = true;
                     }
                     if (event.error == 'audio-capture') {
-                        start_img.src = '@routes.Assets.at("../../../../../../../../home/dgurin/code/bigdl-fork/BigDL/web/web/public/img/mic.gif")';
+                        start_img.src = '@routes.Assets.at("img/mic.gif")';
                         showInfo('info_no_microphone');
                         ignore_onend = true;
                     }
@@ -207,7 +207,7 @@
                     if (ignore_onend) {
                         return;
                     }
-                    start_img.src = '@routes.Assets.at("../../../../../../../../home/dgurin/code/bigdl-fork/BigDL/web/web/public/img/mic.gif")';
+                    start_img.src = '@routes.Assets.at("img/mic.gif")';
                     if (!final_transcript) {
                         showInfo('info_start')
                         return;
@@ -277,7 +277,7 @@
                 ignore_onend = false;
                 final_span.innerHTML = '';
                 interim_span.innerHTML = '';
-                start_img.src = '@routes.Assets.at("../../../../../../../../home/dgurin/code/bigdl-fork/BigDL/web/web/public/img/mic-slash.gif")';
+                start_img.src = '@routes.Assets.at("img/mic-slash.gif")';
                 showInfo('info_allow');
                 start_timestamp = event.timeStamp;
             }
