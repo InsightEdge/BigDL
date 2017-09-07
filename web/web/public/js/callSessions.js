@@ -114,7 +114,7 @@ function toCallSession(callSession) {
     row.push('<td>'); row.push(callSession.id);       row.push('</td>');
     row.push('<td>'); row.push(callSession.category);  row.push('</td>');
     row.push('<td>'); row.push(callSession.agentId);     row.push('<pre id="agentIdPre">       </pre></td>');
-    row.push('<td>'); row.push(callSession.time);      row.push('</td>');
+    row.push('<td>'); row.push(callSession.timeInMilliseconds);      row.push('</td>');
     row.push('<td>'); row.push(callSession.text);      row.push('</td>');
     row.push('</tr>')
     var combinedRow = row.join("");

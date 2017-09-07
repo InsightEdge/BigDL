@@ -50,7 +50,7 @@ Running demo is divided in three parts:
     * Train text classifier model: ```sh runModelTrainingJob.sh```
 
 3. Run Spark streaming job with trained BigDL classification model
-    * In separate terminal tab start Spark streaming for predictions: ```sh runTextPredictionJob.sh```.
+    * In separate terminal tab start Spark streaming for predictions: ```sh runTextClassificationJob.sh```.
     * Start web server: ```cd BigDL/web and sh runWeb.sh```.
 
 Now go to [https://localhost:9443](https://localhost:9443):

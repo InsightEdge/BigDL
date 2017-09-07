@@ -6,7 +6,6 @@ import java.io.File
 import java.util
 
 import _root_.kafka.serializer.StringDecoder
-import com.gigaspaces.document.SpaceDocument
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.example.utils.SimpleTokenizer._
@@ -123,9 +122,8 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
       .optimize()
     val stop = System.currentTimeMillis()
 
-    // TODO save to the grid as binary data: @SpaceStorageType(storageType = StorageType.BINARY)
-    trainedModel.save(modelFile, overWrite = true)
-    log.info(s"Model was saved to $modelFile")
+    val modelId = overwriteTrainedModel(sc, trainedModel)
+    log.info(s"Model was saved to the grid with id $modelId")
 
     val array: Array[ValidationMethod[Float]] = Array(new Top1Accuracy[Float])
     val accuracy = trainedModel.evaluate(validationRDD, array)(0)._1.result()._1
@@ -152,8 +150,15 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
     val modelFile = param.modelFile
 
     log.info("Engine init")
-    val trainedModel = sc.broadcast(Module.load[Float](modelFile))
-    log.info(s"Model was loaded from $modelFile and broadcasted")
+    val models = sc.gridRdd[TrainedModel]().collect()
+    if (models.length > 1) {
+      throw new RuntimeException("There are more than one model in grid")
+    }
+    if (models.length == 0) {
+      throw new RuntimeException("There is no model in the grid. Run 'sh runModelTrainingJob.sh'")
+    }
+    val trainedModel = sc.broadcast(models(0).modelBinary)
+    log.info(s"Model was loaded: ${models(0).id}")
 
     val (brokers, topics) = "localhost:9092" -> "texts"
     val ssc = new StreamingContext(sc, Seconds(5))
@@ -284,6 +289,16 @@ class InsightedgeTextClassifier(param: IeAbstractTextClassificationParams) exten
     val stats = TrainedModelStats(null, time, accuracy)
     sc.grid.write(stats)
     log.info(s"Saved trained model statistics: $stats")
+  }
+
+  def overwriteTrainedModel(sc: SparkContext, model: Module[Float]): String = {
+    val ids = sc.gridRdd[TrainedModel]().collect().toList.map(_.id)
+    val query = new SQLQuery[TrainedModel](classOf[TrainedModel], "id IN (?)")
+    query.setParameter(1, ids.asJava)
+    sc.grid.takeMultiple(query)
+    log.info(s"Deleted next trained models from grid: $ids")
+
+    sc.grid.write(TrainedModel(null, model)).getUID
   }
 
   /**
