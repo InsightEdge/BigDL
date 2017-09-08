@@ -18,9 +18,9 @@
     </modules>
 
     <properties>
-        <spark.lib.version>1.6.0</spark.lib.version>
-        <scala.version.short>2.10</scala.version.short>
-        <scala.version.full>2.10.4</scala.version.full>
+        <spark.lib.version>2.1.1</spark.lib.version>
+        <scala.version.short>2.11</scala.version.short>
+        <scala.version.full>2.11.8</scala.version.full>
     </properties>
 
     <repositories>
@@ -41,7 +41,7 @@
     <dependencies>
         <dependency>
             <groupId>com.intel.analytics.bigdl</groupId>
-            <artifactId>bigdl</artifactId>
+            <artifactId>bigdl-SPARK_2.0</artifactId>
             <version>0.2.0</version>
         </dependency>
 
@@ -60,7 +60,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-streaming-kafka_${scala.version.short}</artifactId>
+            <artifactId>spark-streaming-kafka-0-8_${scala.version.short}</artifactId>
             <version>${spark.lib.version}</version>
         </dependency>
 
@@ -68,13 +68,13 @@
         <dependency>
             <groupId>org.gigaspaces.insightedge</groupId>
             <artifactId>insightedge-core</artifactId>
-            <version>1.0.0</version>
+            <version>2.1.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.gigaspaces.insightedge</groupId>
             <artifactId>insightedge-scala</artifactId>
-            <version>1.0.0</version>
+            <version>2.1.0</version>
             <scope>provided</scope>
         </dependency>
 

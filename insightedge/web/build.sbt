@@ -1,6 +1,6 @@
 name := "web"
 version := "1.0"
-scalaVersion := "2.10.4"
+scalaVersion := "2.11.8"
 
 
 val kafkaLibs = Seq(
@@ -13,8 +13,8 @@ val kafkaLibs = Seq(
 val commonLib = Seq("io.insightedge.bigdl" % "common" % "0.0.1")
 
 def insightEdgeLibs(scope: String) = Seq(
-  "org.gigaspaces.insightedge" % "insightedge-core" % "1.0.0" % scope exclude("javax.jms", "jms"),
-  "org.gigaspaces.insightedge" % "insightedge-scala" % "1.0.0" % scope exclude("javax.jms", "jms")
+  "org.gigaspaces.insightedge" % "insightedge-core" % "2.1.0" % scope exclude("javax.jms", "jms"),
+  "org.gigaspaces.insightedge" % "insightedge-scala" % "2.1.0" % scope exclude("javax.jms", "jms")
 )
 val openspaceResolvers = Seq(
   Resolver.mavenLocal,
