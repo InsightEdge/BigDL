@@ -85,8 +85,8 @@ object LinearRegressionJob {
         println("Should not be here")
       } else {
         val tensor = p.toTensor[Float]
-        val sizes: Array[Int] = tensnor.size()
-        println("Tensor size: " + sizes.deep.mkString(", "))
+//        val sizes: Array[Int] = tensnor.size()
+//        println("Tensor size: " + sizes.deep.mkString(", "))
         println("Tensor: " + tensor)
 //        val vector: linalg.Vector = tensor.toMLlibVector()
 //        println("List: " + vector.toArray.toList)
