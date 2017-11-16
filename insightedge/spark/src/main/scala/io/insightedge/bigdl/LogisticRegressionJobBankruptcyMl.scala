@@ -3,10 +3,9 @@ package io.insightedge.bigdl
 
 import _root_.kafka.serializer.StringDecoder
 import org.apache.spark.ml.classification.{LogisticRegression, LogisticRegressionSummary}
-import org.apache.spark.ml.linalg.Vectors
-import org.apache.spark.ml.linalg.Vector
+import org.apache.spark.ml.linalg.{DenseVector, Vector, Vectors}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructType}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.udf
@@ -52,7 +51,10 @@ object LogisticRegressionJobBankruptcyMl {
     val trainingData = splits(0)
     val testData = splits(1)
 
-    val model = new LogisticRegression().fit(trainingData)
+    val model = new LogisticRegression().setMaxIter(10)
+      .setRegParam(0.3)
+      .setElasticNetParam(0.8)
+      .fit(inputData)
 
     val results: LogisticRegressionSummary = model.evaluate(testData)
     results.predictions.createOrReplaceTempView("predictions")
@@ -74,22 +76,36 @@ object LogisticRegressionJobBankruptcyMl {
         println("-------------------------")
         val textRdd: RDD[String] = rdd.map(_._2)
 
-//        println(textRdd.collect().mkString)
-
-        val dfRaw = spark.createDataFrame(textRdd.map(l => Row(0.0d, l)), schema)
+        val dfRaw = spark.createDataFrame(textRdd.map(l => Row(0.0d, l)), schema) //TODO why do we need to specify label column?
         val inputDataKafka = dfRaw.withColumn("features", toUdfVector(dfRaw("features_raw")))
 
-        inputDataKafka.show
+//        inputDataKafka.show
 
-        val predictions = model.evaluate(inputDataKafka)
+//        val streamResult = model.evaluate(inputDataKafka)
+        val streamResult: DataFrame = model.transform(inputDataKafka)
 
-        predictions.predictions.show
+        streamResult.show(false)
+
+        streamResult.collect.foreach { row =>
+          val input = row.getString(1)
+          val prediction = row.getDouble(5)
+          val probabilities = row.getAs[DenseVector](4).toArray
+
+          println("Input data: " + input)
+          println("Prediction: " + prediction + " (" + getPredictionValue(prediction) + ")")
+          println("Probabilities: " +
+            "Bankruptcy - " + probabilities(0) +
+            ", Non-bankruptcy - " + probabilities(1)
+          )
+
+          println("")
+        }
       }
     }
 
-        ssc.start()
+    ssc.start()
     ssc.awaitTermination()
-//    spark.stop()
+    //    spark.stop()
   }
 
   def getDoubleValue(input: String): Double = input match {
@@ -98,6 +114,12 @@ object LogisticRegressionJobBankruptcyMl {
     case "N" | "NB" => 1.0
     case "B" => 0.0
   }
+
+  def getPredictionValue(input: Double): String = input match {
+    case 1.0d => "Non-bankruptcy"
+    case 0.0d => "Bankruptcy"
+  }
+
 
 
 }
