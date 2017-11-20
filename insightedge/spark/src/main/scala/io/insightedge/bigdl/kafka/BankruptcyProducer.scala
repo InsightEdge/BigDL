@@ -31,9 +31,9 @@ object BankruptcyProducer extends App {
     var values = ""
     while (i < recordsSize) {
       values = values + (if (i == recordsSize - 1) {
-        data(r.nextInt(3)) + ""
+        r.nextDouble() * 100 + ""
       } else {
-        data(r.nextInt(3)) + ","
+        r.nextDouble() * 100 + ","
       })
       i = i+1
     }
