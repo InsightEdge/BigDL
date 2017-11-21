@@ -2,7 +2,7 @@
 package io.insightedge.bigdl.regression
 
 import _root_.kafka.serializer.StringDecoder
-import org.apache.spark.SparkConf
+import com.j_spaces.core.client.SQLQuery
 import org.apache.spark.ml.classification.{LogisticRegression, LogisticRegressionSummary}
 import org.apache.spark.ml.linalg.{DenseVector, Vector, Vectors}
 import org.apache.spark.rdd.RDD
@@ -13,8 +13,11 @@ import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.streaming.dstream.InputDStream
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Seconds, StreamingContext}
+import org.apache.spark.{SparkConf, SparkContext}
 import org.insightedge.spark.context.InsightEdgeConfig
 import org.insightedge.spark.implicits.basic._
+
+import scala.collection.JavaConverters._
 
 
 object LogisticRegressionJobBankruptcyMl {
@@ -27,29 +30,23 @@ object LogisticRegressionJobBankruptcyMl {
     val conf = new SparkConf()
       .setAppName("LogisticRegressionBankruptcyMl")
       .set("spark.task.maxFailures", "1").setInsightEdgeConfig(gsConfig)
-
     val spark = SparkSession
       .builder
       .config(conf)
       .getOrCreate()
 
     val rawData: RDD[String] = spark.sparkContext.textFile("/home/dgurin/Downloads/Qualitative_Bankruptcy/Qualitative_Bankruptcy/Qualitative_Bankruptcy.data.txt")
-    println(rawData.count())
-
     val schema = StructType(Array(StructField("label", DoubleType), StructField("features_raw", StringType)))
-
 
     val toUdfVector: UserDefinedFunction = udf[Vector, String] { x =>
       val parts = x.split(",")
       val features: Array[String] = parts.slice(0, 6)
       Vectors.dense(features.map(s => getDoubleValue(s)))
     }
-
     val rawRddData: RDD[Row] = rawData.map { line =>
       val parts = line.split(",")
       Row(getDoubleValue(parts(6)), line)
     }
-
     val df = spark.createDataFrame(rawRddData, schema)
 
     val inputData = df.withColumn("features", toUdfVector(df("features_raw")))
@@ -62,7 +59,7 @@ object LogisticRegressionJobBankruptcyMl {
     val model = new LogisticRegression().setMaxIter(10)
       .setRegParam(0.3)
       .setElasticNetParam(0.8)
-      .fit(inputData)
+      .fit(trainingData)
 
     import spark.implicits._
     val x = model.summary.predictions.map { row =>
@@ -73,12 +70,14 @@ object LogisticRegressionJobBankruptcyMl {
 
       TrainingResult(null, inputData, features, prediction, probabilities)
     }
-//    spark.sparkContext.grid.clear(TrainingResult)
+    deleteTrainingResults(spark.sparkContext)
     spark.sparkContext.saveMultipleToGrid(x.rdd.collect())
 
-//    val results: LogisticRegressionSummary = model.evaluate(testData)
-//    results.predictions.createOrReplaceTempView("predictions")
-//    println(results.predictions.show(20))
+    val testResults: LogisticRegressionSummary = model.evaluate(testData)
+    testResults.predictions.createOrReplaceTempView("training_results")
+    val correctPredictions = spark.sqlContext.sql("Select count(*) from training_results where prediction == label").collectAsList().get(0).getLong(0)
+    val accuracy = correctPredictions.toDouble / testData.count
+    println("Model accuracy: " + accuracy)
 
     val ssc = new StreamingContext(spark.sparkContext, Seconds(1))
 
@@ -93,9 +92,8 @@ object LogisticRegressionJobBankruptcyMl {
     val toUdfVectorWithError: UserDefinedFunction = udf[Vector, String] { x =>
       val parts = x.split(",")
       val features: Array[String] = parts.slice(0, 6)
-      Vectors.dense(features.map(s => getDoubleValueWithError(s)))
+      Vectors.dense(features.map(s => s.toDouble))
     }
-
 
     val schemaKafka = StructType(Array(StructField("features_raw", StringType)))
     messages.foreachRDD{(rdd: RDD[(String, String)]) =>
@@ -106,12 +104,7 @@ object LogisticRegressionJobBankruptcyMl {
         val dfRaw = spark.createDataFrame(textRdd.map(l => Row(l)), schemaKafka)
         val inputDataKafka = dfRaw.withColumn("features", toUdfVectorWithError(dfRaw("features_raw")))
 
-        //        inputDataKafka.show
-
-        //        val streamResult = model.evaluate(inputDataKafka)
         val streamResult: DataFrame = model.transform(inputDataKafka)
-
-        //        streamResult.show(false)
 
         val predictions = streamResult.collect.map { row =>
           val input = row.getString(0)
@@ -143,8 +136,11 @@ object LogisticRegressionJobBankruptcyMl {
     //    spark.stop()
   }
 
-  def getDoubleValueWithError(input: String): Double = {
-    input.toDouble
+  def deleteTrainingResults(sc: SparkContext): Int = {
+    val ids = sc.gridRdd[TrainingResult]().collect().toList.map(_.id)
+    val query = new SQLQuery[TrainingResult](classOf[TrainingResult], "id IN (?)")
+    query.setParameter(1, ids.asJava)
+    sc.grid.takeMultiple(query).length
   }
 
   def getDoubleValue(input: String): Double = input match {
