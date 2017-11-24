@@ -27,8 +27,7 @@ Below you can see simplified architecture of the application:
 Bankruptcy prediction is done in one Spark job, it's logically divided on two main parts: Model training and Prediction.
 Model training part is for training model with [data](https://archive.ics.uci.edu/ml/datasets/Qualitative_Bankruptcy) we already have.
 In prediction part [direct stream](http://spark.apache.org/docs/2.1.0/streaming-kafka-0-8-integration.html#approach-2-direct-approach-no-receivers) is created to get data from Kafka.
-After data is read it's processed by trained model and prediction are done. Training model summary, prediction results alongside with input data are saved to the grid for latest usage, you can use GS UI or WEBUI to check it.
-
+After data is read it's processed by trained model and prediction are done. Training model summary, prediction results alongside with input data are saved to the grid for later usage, you can use GS UI or WEBUI to check it.
 To push data to Kafka we will use simple Java app which writes random probabilities to the Kafka's topic. 
 
 ## How to run the demo
@@ -57,3 +56,5 @@ Probabilities: Bankruptcy - 29% , Non-bankruptcy - 71%
 The `Input data` is a data which was received from Kafka.
 `Prediction` is a what trained model predicted - either bankruptcy or not.
 `Probabilities` shows us probabilities for bankruptcy and non-bankruptcy event.
+
+## What's next?
