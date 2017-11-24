@@ -22,9 +22,7 @@ import scala.collection.JavaConverters._
 
 object LogisticRegressionJobBankruptcyMl {
 
-
   def main(args: Array[String]): Unit = {
-
 
     val gsConfig = InsightEdgeConfig("insightedge-space", Some("insightedge"), Some("127.0.0.1:4174"))
     val conf = new SparkConf()
@@ -150,7 +148,6 @@ object LogisticRegressionJobBankruptcyMl {
     case "NB" => 1.0
     case "B" => 0.0
   }
-
 
   def getPredictionValue(input: Double): String = input match {
     case 1.0d => "Non-bankruptcy"
