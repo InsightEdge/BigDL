@@ -6,10 +6,10 @@ Used software:
 * insightedge 2.1
 * tensorboard. To installed run: ```sudo pip intsall tensorboard```
 
-export INSIGHTEDGE_HOME=/home/osboxes/Desktop/gigaspaces-insightedge-2.1.0-ga-100-premium
-export SPARK_HOME=/home/osboxes/Desktop/gigaspaces-insightedge-2.1.0-ga-100-premium
-export IE_BIGDL_DIR=$INSIGHTEDGE_HOME
-export KAFKA_HOME=/home/osboxes/Desktop/kafka_2.11-0.10.1.0
+* export INSIGHTEDGE_HOME=/home/osboxes/Desktop/gigaspaces-insightedge-2.1.0-ga-100-premium
+* export SPARK_HOME=/home/osboxes/Desktop/gigaspaces-insightedge-2.1.0-ga-100-premium
+* export IE_BIGDL_DIR=$INSIGHTEDGE_HOME
+* export KAFKA_HOME=/home/osboxes/Desktop/kafka_2.11-0.10.1.0
 
 Prerequisites:
 * Download and extract data(first three steps) as described [here](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/example/textclassification)
